@@ -16,6 +16,7 @@ ic.configureOutput(prefix=f'----- | ', includeContext=True)
 
 UPLOAD_ITEM_FOLDER = './images'
 
+
 ##############################
 allowed_languages = ["english", "danish", "spanish"]
 google_spread_sheet_key = ""
@@ -25,6 +26,7 @@ def lans(key):
     with open("dictionary.json", 'r', encoding='utf-8') as file:
         data = json.load(file)
     return data[key][default_language]
+
 
 ##############################
 def db():
@@ -61,6 +63,7 @@ def validate_user_email(lan = "en"):
     if not re.match(REGEX_EMAIL, user_email): raise Exception(dictionary.invalid_email[lan], 400)
     return user_email
 
+
 ##############################
 USER_USERNAME_MIN = 2
 USER_USERNAME_MAX = 20
@@ -71,6 +74,7 @@ def validate_user_username():
     if len(user_username) < USER_USERNAME_MIN: raise Exception(error, 400)
     if len(user_username) > USER_USERNAME_MAX: raise Exception(error, 400)
     return user_username
+
 
 ##############################
 USER_FIRST_NAME_MIN = 2
@@ -91,8 +95,6 @@ def validate_user_password(lan = "en"):
     user_password = request.form.get("user_password", "").strip()
     if not re.match(REGEX_USER_PASSWORD, user_password): raise Exception(dictionary.invalid_password[lan], 400)
     return user_password
-
-
 
 
 ##############################
@@ -120,6 +122,7 @@ def validate_uuid4_without_dashes(uuid4 = ""):
     if not re.match(REGEX_UUID4_WITHOUT_DASHES, uuid4): raise Exception(error, 400)
     return uuid4
 
+
 ##############################
 POST_MIN_LEN = 2
 POST_MAX_LEN = 250
@@ -139,15 +142,15 @@ def send_email(to_email, subject, template):
         # Copy the key : pdru ctfd jdhk xxci
 
         # Email and password of the sender's Gmail account
-        sender_email = ""
-        password = ""  # If 2FA is on, use an App Password instead
+        sender_email = "kristiansensofie722@gmail.com"
+        password = "ywqg nucr klmp xtnw"  # If 2FA is on, use an App Password instead
 
         # Receiver email address
         receiver_email = to_email
         
         # Create the email message
         message = MIMEMultipart()
-        message["From"] = "X clone"
+        message["From"] = "X"
         message["To"] = to_email
         message["Subject"] = subject
 
