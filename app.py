@@ -143,7 +143,9 @@ def signup(lan = "english"):
             ic(email_verify_account)
             x.send_email(user_email, "Verify your account", email_verify_account)
 
-            return f"""<mixhtml mix-redirect="{ url_for('login') }"></mixhtml>""", 400
+            verification_modal = render_template("_verification_modal.html")
+            return f"""<mixhtml mix-update="#modal">{verification_modal}</mixhtml>""", 200
+
         except Exception as ex:
             ic(ex)
             # User errors
