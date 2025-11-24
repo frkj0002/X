@@ -24,7 +24,7 @@
         "danish": "Brugernavn",
         "spanish": "Nombre de usuario"
     },
-    "user_first_name": {
+    "first_name": {
         "english": "First name",
         "danish": "Fornavn",
         "spanish": "Nombre de pila"
