@@ -227,10 +227,6 @@ def verify_account():
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
-
-##############################
-# @app.get("/forgot-password")
-# def view_forgot_form():
     
 
 ##############################
@@ -271,12 +267,76 @@ def view_forgot_form():
             if ex.args[1] == 400: return ex.args[0], 400    
 
             # System or developer error
-            return "Cannot verify user"
+            return "Cannot send link to user"
 
         finally:
             if "cursor" in locals(): cursor.close()
             if "db" in locals(): db.close()
      
+##############################
+@app.route("/reset-password", methods=["GET", "POST"])
+def reset_password():
+    if request.method == "GET":
+        try:
+            reset_key = request.args.get("key", "").strip()
+            db, cursor = x.db()
+            q = "SELECT user_pk FROM users WHERE user_reset_password_key = %s"
+            cursor.execute(q, (reset_key,))
+            user = cursor.fetchone()
+
+            if not user: 
+                return "Expired link", 400
+        
+            return render_template("_reset_password.html", key=reset_key)
+        except Exception as ex:
+            ic(ex)
+            if "db" in locals(): db.rollback()
+            if ex.args[1] == 400: return ex.args[0], 400
+            return "Cannot reset password"
+        finally:
+            if "cursor" in locals(): cursor.close()
+            if "db" in locals(): db.close()
+
+    if request.method == "POST":
+        try:
+            reset_key = request.form.get("reset_key", "").strip()
+            x.validate_uuid4_without_dashes(reset_key)
+
+            user_password = x.validate_user_password()
+            user_password_confirm = x.validate_user_password_confirm()
+
+            if user_password != user_password_confirm:
+                raise Exception ("Passwords do not match", 400)
+            
+            db, cursor = x.db()
+            q = "SELECT user_pk FROM users WHERE user_reset_password_key = %s"
+            cursor.execute(q, (reset_key,))
+            user = cursor.fetchone()
+
+            if not user:
+                raise Exception ("Invalid or expired reset link", 400)
+            
+            user_pk = user["user_pk"]
+            hashed = generate_password_hash(user_password)
+
+            q = "UPDATE users SET user_password = %s, user_reset_password_key = '' WHERE user_pk = %s"
+            cursor.execute(q, (hashed, user_pk))
+
+            db.commit()
+
+            return redirect(url_for('login'))
+            # return f"""<mixhtml mix-redirect="{url_for('login')}"></mixhtml>"""
+        
+        except Exception as ex:
+            ic(ex)
+            if "db" in locals(): db.rollback()
+            if len(ex.args) > 1 and ex.args[1] == 400:
+                return ex.args[0], 400
+            return "Cannot reset password", 500
+        finally:
+            if "cursor" in locals(): cursor.close()
+            if "db" in locals(): db.close()
+        
 
 
 ##############################
