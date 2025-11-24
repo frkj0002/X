@@ -228,6 +228,57 @@ def verify_account():
         if "db" in locals(): db.close()
 
 ##############################
+# @app.get("/forgot-password")
+# def view_forgot_form():
+    
+
+##############################
+@app.route("/forgot-password", methods=["GET", "POST"])
+def view_forgot_form():
+    if request.method == "GET":
+        return render_template("_forgot_password.html")
+    
+    if request.method == "POST":
+        user_email = request.form.get("user_email", "").strip()
+
+        try:
+            db, cursor = x.db()
+            # find brugeren i databasen
+            q = "SELECT user_pk FROM users WHERE user_email = %s"
+            cursor.execute(q, (user_email,))
+            user = cursor.fetchone()
+
+            if user:
+                user_pk = user["user_pk"]
+                ic(user)
+                reset_key = uuid.uuid4().hex
+                q = "UPDATE users SET user_reset_password_key = %s WHERE user_pk = %s"
+                cursor.execute(q, (reset_key, user_pk))
+                db.commit()
+
+                # Send reset password email
+                email_forgot_password = render_template("_email_forgot_password.html", reset_key=reset_key)
+                ic(email_forgot_password)
+                x.send_email(user_email, "Reset your password", email_forgot_password)
+
+                return redirect(url_for("login"))
+
+        except Exception as ex:
+            ic(ex)
+            if "db" in locals(): db.rollback()
+            # User errors
+            if ex.args[1] == 400: return ex.args[0], 400    
+
+            # System or developer error
+            return "Cannot verify user"
+
+        finally:
+            if "cursor" in locals(): cursor.close()
+            if "db" in locals(): db.close()
+     
+
+
+##############################
 @app.get("/logout")
 def logout():
     try:
