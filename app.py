@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, session, redirect, url_for, j
 from flask_session import Session
 from werkzeug.security import generate_password_hash
 from werkzeug.security import check_password_hash
+from werkzeug.utils import secure_filename
 import gspread
 import requests
 import json
@@ -26,6 +27,13 @@ app.config['MAX_CONTENT_LENGTH'] = 1 * 1024 * 1024   # 1 MB
 app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
  
+##############################
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+UPLOAD_FOLDER = 'static/images/user_avatars'
+
+def allowed_file(filename):
+    return '.' in filename and \
+        filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 ##############################
 ##############################
@@ -476,10 +484,31 @@ def api_update_profile():
         user_username = x.validate_user_username()
         user_first_name = x.validate_user_first_name()
 
+        # Hent den uploadede fil fra formularen
+        avatar_file = request.files.get("user_avatar_image")
+        # Placeholder - bliver sat til nyt filnavn, hvis brugeren uploader et billede
+        user_avatar_path = None
+
+        # Tjek at der er valgt en fil, og at den ikke er tom
+        if avatar_file and avatar_file.filename != "":
+            # Er filtypen tilladt?
+            if not allowed_file(avatar_file.filename):
+                raise Exception ("Invalid filetype", 400)
+            
+            # Hent filtypen, lav et unikt filnavn, lav fuld sti og gem filen på serveren
+            filetype = avatar_file.filename.rsplit('.', 1)[1].lower()
+            user_avatar_path = f"{uuid.uuid4().hex}.{filetype}"
+            save_path = os.path.join(UPLOAD_FOLDER, user_avatar_path)
+            avatar_file.save(save_path)
+
         # Connect to the database
-        q = "UPDATE users SET user_email = %s, user_username = %s, user_first_name = %s WHERE user_pk = %s"
         db, cursor = x.db()
-        cursor.execute(q, (user_email, user_username, user_first_name, user["user_pk"]))
+        if user_avatar_path:
+            q = "UPDATE users SET user_email = %s, user_username = %s, user_first_name = %s, user_avatar_path = %s WHERE user_pk = %s"
+            cursor.execute(q, (user_email, user_username, user_first_name, user_avatar_path, user["user_pk"]))
+        else:
+            q = "UPDATE users SET user_email = %s, user_username = %s, user_first_name = %s WHERE user_pk = %s"
+            cursor.execute(q, (user_email, user_username, user_first_name, user["user_pk"]))
         db.commit()
 
         # Response to the browser
@@ -488,12 +517,13 @@ def api_update_profile():
             <browser mix-bottom="#toast">{toast_ok}</browser>
             <browser mix-update="#profile_tag .name">{user_first_name}</browser>
             <browser mix-update="#profile_tag .handle">{user_username}</browser>
+            <browser mix-update="#profile_tag .picture">{user_avatar_path}</browser>
             
         """, 200
     except Exception as ex:
         ic(ex)
         # User errors
-        if ex.args[1] == 400:
+        if len(ex.args) > 1 and ex.args[1] == 400:
             toast_error = render_template("___toast_error.html", message=ex.args[0])
             return f"""<mixhtml mix-update="#toast">{ toast_error }</mixhtml>""", 400
         
