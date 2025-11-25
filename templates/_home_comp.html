@@ -1,6 +1,6 @@
 <div class="d-flex flex-row ma-2">
     <div class="w-auto">
-        <img src="{{ url_for('static', filename='images/avatar_1.jpg') }}" class="w-8 rounded-full">
+        <img src="{{ url_for('static', filename='images/' ~ (user.user_avatar_path if user.user_avatar_path else 'unknown.jpg')) }}" class="w-8 rounded-full">
     </div>
     {% include "___post_container.html" %}
 </div>

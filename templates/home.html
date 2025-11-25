@@ -62,7 +62,7 @@
             <button class="post-btn">Post</button>
 
             <div id="profile_tag">
-                <img src="{{ url_for('static', filename='images/avatar_1.jpg') }}" alt="Profile">
+                <img src="{{ url_for('static', filename='images/' ~ (user.user_avatar_path if user.user_avatar_path else 'unknown.jpg')) }}" alt="Profile picture">
                 <div>
                     <div class="name">
                         {{ user.user_first_name }}
