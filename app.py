@@ -30,6 +30,7 @@ Session(app)
 ##############################
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 UPLOAD_FOLDER = 'static/images/user_avatars'
+UPLOAD_POST_FOLDER = 'static/images/post_images'
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -431,7 +432,20 @@ def api_create_post():
         user_pk = user["user_pk"]        
         post = x.validate_post(request.form.get("post", ""))
         post_pk = uuid.uuid4().hex
-        post_image_path = ""
+
+        post_image_path = request.files.get("upload_image")
+
+        post_image_path = None
+        if post_image_path and post_image_path.filename != "":
+            if not allowed_file(post_image_path.filename):
+                raise Exception ("Invalid filetype", 400)
+            
+        filetype = post_image_path.filename.rsplit('.', 1)[1].lower()
+        post_image_path = f"{uuid.uuid4().hex}.{filetype}"
+        safe_path = os.path.join(UPLOAD_POST_FOLDER, post_image_path)
+        post_image_path.safe(safe_path)
+       
+
         db, cursor = x.db()
         q = "INSERT INTO posts VALUES(%s, %s, %s, %s, %s)"
         cursor.execute(q, (post_pk, user_pk, post, 0, post_image_path))
@@ -442,7 +456,7 @@ def api_create_post():
             "user_last_name": user["user_last_name"],
             "user_username": user["user_username"],
             "user_avatar_path": user["user_avatar_path"],
-            "post_message": post,
+            "post_message": post 
         }
         html_post_container = render_template("___post_container.html")
         html_post = render_template("_tweet.html", tweet=tweet)
