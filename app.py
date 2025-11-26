@@ -460,8 +460,8 @@ def api_create_post():
             uploaded_file.save(safe_path)
         
         db, cursor = x.db()
-        q = "INSERT INTO posts VALUES(%s, %s, %s, %s, %s)"
-        cursor.execute(q, (post_pk, user_pk, post, 0, post_image_path))
+        q = "INSERT INTO posts VALUES(%s, %s, %s, %s, %s, %s)"
+        cursor.execute(q, (post_pk, user_pk, post, 0, post_image_path, None))
         db.commit()
         
         toast_ok = render_template("___toast_ok.html", message="The world is reading your post !")
