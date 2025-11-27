@@ -39,19 +39,19 @@
       </div>
 
 
-      <h2 id="loginTitle">Log in to X</h2>
+      <h2 id="loginTitle">{{ x.lans("login_to_x") }}</h2>
       <form action="/login/{{ lan }}" mix-post class="x-dialog__form" autocomplete="off">
-        <input name="user_email" type="text" placeholder="Email" mix-check="{{ x.REGEX_EMAIL }}">
-        <input name="user_password" type="password" placeholder="{{ dictionary.password[lan] }}">
-        <a href="{{ url_for('view_forgot_form') }}">Forgot your password</a>
+        <input name="user_email" type="text" placeholder="{{ x.lans('email') }}" mix-check="{{ x.REGEX_EMAIL }}">
+        <input name="user_password" type="password" placeholder="{{ x.lans('password') }}">
+        <a href="{{ url_for('view_forgot_form') }}">{{ x.lans("forgot_password") }}?</a>
 
-        <button class="x-dialog__btn" mix-default="Login" mix-await="Logging in ...">
+        <button class="x-dialog__btn" mix-default="{{ x.lans('login') }}" mix-await="{{ x.lans('loggin_in') }}...">
           {{ x.lans("login") }}
         </button>
       </form>
       <p class="x-dialog__alt">
-        {{ x.lans("dont_have_an_account") }} ?
-        <a href="{{ url_for('signup') }}">Sign up</a>
+        {{ x.lans("dont_have_an_account") }}?
+        <a href="{{ url_for('signup') }}">{{ x.lans("sign_up") }}</a>
       </p>
     </div>
 

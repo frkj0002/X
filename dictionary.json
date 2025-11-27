@@ -16,7 +16,7 @@
     },
     "password": {
         "english": "Password",
-        "danish": "Pinkode",
+        "danish": "Adgangskode",
         "spanish": "Cláve"
     },
     "username": {
@@ -56,7 +56,157 @@
     },
     "user_not_verified": {
         "english": "User not verified",
-        "danish": "Bruger ikke bekræftet",
+        "danish": "Bruger ikke verificeret",
         "spanish": "Usuario no verificado"
+    },
+    "login_to_x": {
+        "english": "Log in to X",
+        "danish": "Log ind på X",
+        "spanish": "Iniciar sesión en x"
+    },
+    "forgot_password": {
+        "english": "Forgot your password",
+        "danish": "Glemt din adgangskode",
+        "spanish": "Olvidaste tu contraseña"
+    },
+    "sign_up_to_x": {
+        "english": "Sign up to X",
+        "danish": "Tilmeld dig X",
+        "spanish": "Regístrate en X"
+    },
+    "to": {
+        "english": "to",
+        "danish": "til",
+        "spanish": "a"
+    },
+    "characters": {
+        "english": "characters",
+        "danish": "tegn",
+        "spanish": "personajes"
+    },
+    "have_an_account": {
+        "english": "Have an account",
+        "danish": "Har du en bruger",
+        "spanish": "Tener una cuenta"
+    },
+    "email_already_registered": {
+        "english": "Email already registered",
+        "danish": "Email allerede registreret",
+        "spanish": "correo electrónico ya registrado"
+    },
+    "loggin_in": {
+        "english": "Loggin in",
+        "danish": "Logger ind",
+        "spanish": "Iniciando sesión"
+    },
+    "home": {
+        "english": "Home",
+        "danish": "Hjem",
+        "spanish": "Hogar"
+    },
+    "explore": {
+        "english": "Explore",
+        "danish": "Udforsk",
+        "spanish": "Explorar"
+    },
+    "notifications": {
+        "english": "Notifications",
+        "danish": "Notifikationer",
+        "spanish": "Notificaciones"
+    },
+    "messages": {
+        "english": "Messages",
+        "danish": "Beskeder",
+        "spanish": "Mensajes"
+    },
+    "bookmarks": {
+        "english": "Bookmarks",
+        "danish": "Gemte",
+        "spanish": "Marcadores"
+    },
+    "jobs": {
+        "english": "Jobs",
+        "danish": "Jobs",
+        "spanish": "Empleos"
+    },
+    "communities": {
+        "english": "Communities",
+        "danish": "Fællesskaber",
+        "spanish": "Comunidades"
+    },
+    "premium": {
+        "english": "Premium",
+        "danish": "Premium",
+        "spanish": "Prima"
+    },
+    "profile": {
+        "english": "Profile",
+        "danish": "Profil",
+        "spanish": "Perfil"
+    },
+    "more": {
+        "english": "More",
+        "danish": "Mere",
+        "spanish": "Más"
+    },
+    "logout": {
+        "english": "Logout",
+        "danish": "Log ud",
+        "spanish": "Cerrar sesión"
+    },
+    "what_is_new": {
+        "english": "What is new",
+        "danish": "Noget nyt",
+        "spanish": "Que hay de nuevo"
+    },
+    "search": {
+        "english": "Search",
+        "danish": "Søg",
+        "spanish": "Buscar"
+    },
+    "whats_happening": {
+        "english": "What's happening now",
+        "danish": "Hvad sker lige nu",
+        "spanish": "Qué está pasando ahora"
+    },
+    "more_news": {
+        "english": "More news",
+        "danish": "Flere nyheder",
+        "spanish": "Más noticias"
+    },
+    "who_to_follow": {
+        "english": "Who to follow",
+        "danish": "Følg også",
+        "spanish": "A quien seguir"
+    },
+    "show_more": {
+        "english": "Show more",
+        "danish": "Vis flere",
+        "spanish": "Mostrar más"
+    },
+    "post": {
+        "english": "Post",
+        "danish": "Del",
+        "spanish": "Enviar"
+    },
+    "posting": {
+        "english": "Posting",
+        "danish": "Deler",
+        "spanish": "Destino"
+    },
+    "change_avatar_image": {
+        "english": "Change avatar image",
+        "danish": "Skift profilbillede",
+        "spanish": "Cambiar imagen de avatar"
+    },
+    "update_profile": {
+        "english": "Update profile",
+        "danish": "Opdater profil",
+        "spanish": "Actualizar perfil"
+    },
+    "follow": {
+        "english": "Follow",
+        "danish": "Følg",
+        "spanish": "Vigilar"
     }
 }

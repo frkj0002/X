@@ -38,7 +38,7 @@
 
       </div>
 
-      <h2 id="loginTitle">Sign up to X</h2>
+      <h2 id="loginTitle">{{ x.lans("sign_up_to_x") }}</h2>
       <form class="x-dialog__form" action="{{ url_for('signup') }}" mix-post autocomplete="off">
 
         <div>
@@ -51,30 +51,33 @@
         </div>
         <div>
           <label for="user_username">
-            <span>{{ x.lans("username") }}</span> - {{ x.USER_USERNAME_MIN }} to {{ x.USER_USERNAME_MAX }} characters
+            <span>{{ x.lans("username") }}</span> - {{ x.USER_USERNAME_MIN }} {{ x.lans("to") }} {{ x.USER_USERNAME_MAX
+            }} {{ x.lans("characters") }}
           </label>
           <input name="user_username" id="user_username" type="text" mix-check="{{ x.REGEX_USER_USERNAME }}">
         </div>
         <div>
           <label for="user_first_name">
-            <span>{{ x.lans("first_name") }}</span> - {{ x.USER_FIRST_NAME_MIN }} to {{ x.USER_FIRST_NAME_MAX }}
-            characters
+            <span>{{ x.lans("first_name") }}</span> - {{ x.USER_FIRST_NAME_MIN }} {{ x.lans("to") }} {{
+            x.USER_FIRST_NAME_MAX }}
+            {{ x.lans("characters") }}
           </label>
           <input name="user_first_name" id="user_first_name" type="text" mix-check="{{ x.REGEX_USER_USERNAME }}">
         </div>
         <div>
           <label for="password">
-            <span>{{ x.lans("password") }}</span> - {{ x.USER_PASSWORD_MIN }} to {{ x.USER_PASSWORD_MAX }} characters
+            <span>{{ x.lans("password") }}</span> - {{ x.USER_PASSWORD_MIN }} {{ x.lans("to") }} {{ x.USER_PASSWORD_MAX
+            }} {{ x.lans("characters") }}
           </label>
           <input name="user_password" id="password" type="password" mix-check="{{ x.REGEX_USER_PASSWORD }}">
         </div>
-        <button class="x-dialog__btn" mix-default="Sign up" mix-await="Signing up...">
-          Sign up
+        <button class="x-dialog__btn" mix-default="{{ x.lans('sign_up') }}" mix-await="{{ x.lans('signing_up') }}...">
+          {{ x.lans("sign_up") }}
         </button>
       </form>
       <p class="x-dialog__alt">
-        Have an account?
-        <a href="{{ url_for('login') }}">Log in</a>
+        {{ x.lans("have_an_account") }}?
+        <a href="{{ url_for('login') }}">{{ x.lans("login") }}</a>
       </p>
     </div>
 
