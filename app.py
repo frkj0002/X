@@ -411,10 +411,13 @@ def api_like_tweet():
     try:
         user = session.get("user", "")
         post_pk = request.args.get("post_pk")
+        like_created_at = int(time.time())
 
         db, cursor = x.db()
-        q = "INSERT INTO likes VALUES (%s, %s)"
-        cursor.execute(q, (user["user_pk"], post_pk))
+        q = "INSERT INTO likes VALUES (%s, %s, %s)"
+        cursor.execute(q, (user["user_pk"], post_pk, like_created_at))
+        db.commit()
+
 
         button_unlike_tweet = render_template("___button_unlike_tweet.html", post_pk=post_pk)
         return f"""
