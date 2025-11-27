@@ -189,8 +189,8 @@ def home():
         user = session.get("user", "")
         if not user: return redirect(url_for("login"))
         db, cursor = x.db()
-        q = "SELECT * FROM users JOIN posts ON user_pk = post_user_fk ORDER BY RAND() LIMIT 5"
-        cursor.execute(q)
+        q = "SELECT * FROM users JOIN posts ON user_pk = post_user_fk AND post_deleted_at = 0 ORDER BY RAND() LIMIT 5"
+        cursor.execute(q, (0))
         tweets = cursor.fetchall()
         ic(tweets)
 
@@ -461,7 +461,7 @@ def api_create_post():
         
         db, cursor = x.db()
         q = "INSERT INTO posts VALUES(%s, %s, %s, %s, %s, %s)"
-        cursor.execute(q, (post_pk, user_pk, post, 0, post_image_path, None))
+        cursor.execute(q, (post_pk, user_pk, post, 0, post_image_path, 0))
         db.commit()
         
         toast_ok = render_template("___toast_ok.html", message="The world is reading your post !")
