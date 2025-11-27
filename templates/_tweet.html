@@ -1,4 +1,4 @@
-<article class="post" mix-fade-in="5000">
+<article class="post" id="post_{{ tweet.post_pk }}" mix-fade-in="5000">
     <img src="{{ url_for('static', filename='images/user_avatars/'~(tweet.user_avatar_path if tweet.user_avatar_path else 'unknown.jpg')) }}"
         alt="Profile Picture" class="w-8 h-8 rounded-full">
     <div class="post-content">
@@ -9,11 +9,26 @@
             </span>
             <span class="handle">@{{ tweet.user_username }}</span> · <span class="time">1d</span>
         </div>
+
+        <!-- {% if session.user and session.user.user_pk == tweet.post_user_fk %}
+        <button class="cursor-pointer" mix-delete="{{ url_for('delete_post', post_pk=tweet.post_pk) }}">
+            <i class="fa-solid fa-trash"></i> Delete
+        </button>
+        {% endif %} -->
+
+        {% if session.user and session.user.user_pk == tweet.post_user_fk %}
+        <a href="{{ url_for('delete_post', post_pk=tweet.post_pk) }}" class="cursor-pointer" mix-delete
+            mix-remove="#post_{{ tweet.post_pk }}">
+            <i class="fa-solid fa-trash"></i> Delete
+        </a>
+        {% endif %}
+
         <p class="text">
             {{ tweet.post_message }}
         </p>
         {% if tweet.post_image_path: %}
-        <img src="{{ url_for('static', filename='images/post_images/' ~ tweet.post_image_path) }}" alt="Post image" class="w-80">
+        <img src="{{ url_for('static', filename='images/post_images/' ~ tweet.post_image_path) }}" alt="Post image"
+            class="w-80">
         {% endif %}
 
         <div class="post-actions">

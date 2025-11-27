@@ -189,8 +189,8 @@ def home():
         user = session.get("user", "")
         if not user: return redirect(url_for("login"))
         db, cursor = x.db()
-        q = "SELECT * FROM users JOIN posts ON user_pk = post_user_fk ORDER BY RAND() LIMIT 5"
-        cursor.execute(q)
+        q = "SELECT * FROM users JOIN posts ON user_pk = post_user_fk AND post_deleted_at = 0 ORDER BY RAND() LIMIT 5"
+        cursor.execute(q, (0))
         tweets = cursor.fetchall()
         ic(tweets)
 
@@ -461,7 +461,7 @@ def api_create_post():
         
         db, cursor = x.db()
         q = "INSERT INTO posts VALUES(%s, %s, %s, %s, %s, %s)"
-        cursor.execute(q, (post_pk, user_pk, post, 0, post_image_path, None))
+        cursor.execute(q, (post_pk, user_pk, post, 0, post_image_path, 0))
         db.commit()
         
         toast_ok = render_template("___toast_ok.html", message="The world is reading your post !")
@@ -500,7 +500,35 @@ def api_create_post():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()    
 
+##############################
+@app.route("/delete-post", methods=["DELETE"])
+def delete_post():
+    try: 
+        user = session.get("user")
+        if not user:
+            return "invalid user"
+        
+        post_pk = request.args.get("post_pk")
+        if not post_pk:
+            return "Missing post"
+        
+        post_deleted_at = int(time.time())
 
+        db, cursor = x.db()
+        q = "UPDATE posts SET post_deleted_at = %s WHERE post_pk = %s AND post_user_fk = %s"
+        cursor.execute(q, (post_deleted_at, post_pk, user["user_pk"]))
+        db.commit()
+
+        return f'<mixhtml mix-remove="#post_{post_pk}"></mixhtml>'
+    
+    except Exception as ex:
+        ic(ex)
+        if "db" in locals(): db.rollback()
+        return "Could not delete post", 500
+
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()  
 
 ##############################
 @app.route("/api-update-profile", methods=["POST"])
