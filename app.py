@@ -500,7 +500,35 @@ def api_create_post():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()    
 
+##############################
+@app.route("/delete-post", methods=["DELETE"])
+def delete_post():
+    try: 
+        user = session.get("user")
+        if not user:
+            return "invalid user"
+        
+        post_pk = request.args.get("post_pk")
+        if not post_pk:
+            return "Missing post"
+        
+        post_deleted_at = int(time.time())
 
+        db, cursor = x.db()
+        q = "UPDATE posts SET post_deleted_at = %s WHERE post_pk = %s AND post_user_fk = %s"
+        cursor.execute(q, (post_deleted_at, post_pk, user["user_pk"]))
+        db.commit()
+
+        return f'<mixhtml mix-remove="#post_{post_pk}"></mixhtml>'
+    
+    except Exception as ex:
+        ic(ex)
+        if "db" in locals(): db.rollback()
+        return "Could not delete post", 500
+
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()  
 
 ##############################
 @app.route("/api-update-profile", methods=["POST"])
