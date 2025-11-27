@@ -13,7 +13,7 @@
             {{ tweet.post_message }}
         </p>
         {% if tweet.post_image_path: %}
-        <img src="{{ url_for('static', filename='images/' ~ tweet.post_image_path) }}" alt="Post image" class="w-80">
+        <img src="{{ url_for('static', filename='images/post_images/' ~ tweet.post_image_path) }}" alt="Post image" class="w-80">
         {% endif %}
 
         <div class="post-actions">

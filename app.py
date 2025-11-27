@@ -428,43 +428,61 @@ def api_like_tweet():
 def api_create_post():
     try:
         user = session.get("user", "")
-        if not user: return "invalid user"
+        if not user: 
+            return "invalid user"
+
         user_pk = user["user_pk"]        
-        post = x.validate_post(request.form.get("post", ""))
         post_pk = uuid.uuid4().hex
 
-        post_image_path = request.files.get("upload_image")
-
-        post_image_path = None
-        if post_image_path and post_image_path.filename != "":
-            if not allowed_file(post_image_path.filename):
-                raise Exception ("Invalid filetype", 400)
+        # hent tekst fra formular
+        post_text = request.form.get("post", "").strip()
+        post = None
+        if post_text:
+            post = x.validate_post(post_text)
             
-        filetype = post_image_path.filename.rsplit('.', 1)[1].lower()
-        post_image_path = f"{uuid.uuid4().hex}.{filetype}"
-        safe_path = os.path.join(UPLOAD_POST_FOLDER, post_image_path)
-        post_image_path.safe(safe_path)
-       
-
+        # hvis der ikke er tekst, kan det ikke udgives
+        if not post:
+            toast_error = render_template("___toast_error.html", message="Post must contain text")
+            return f"<browser mix-bottom='#toast'>{toast_error}</browser>"
+        
+        # håndtering af billedfilen
+        uploaded_file = request.files.get("upload_image")
+        post_image_path = None
+        if uploaded_file and uploaded_file.filename != "":
+            if not allowed_file(uploaded_file.filename):
+                toast_error = render_template("___toast_error.html", message="Invalid file type")
+                return f"<browser mix-bottom='#toast'>{toast_error}</browser>"
+            
+            # Hent filtypen, lav et unikt filnavn, lav fuld sti og gem filen på serveren
+            filetype = uploaded_file.filename.rsplit('.', 1)[1].lower()
+            post_image_path = f"{uuid.uuid4().hex}.{filetype}"
+            safe_path = os.path.join(UPLOAD_POST_FOLDER, post_image_path)
+            uploaded_file.save(safe_path)
+        
         db, cursor = x.db()
-        q = "INSERT INTO posts VALUES(%s, %s, %s, %s, %s)"
-        cursor.execute(q, (post_pk, user_pk, post, 0, post_image_path))
+        q = "INSERT INTO posts VALUES(%s, %s, %s, %s, %s, %s)"
+        cursor.execute(q, (post_pk, user_pk, post, 0, post_image_path, None))
         db.commit()
+        
         toast_ok = render_template("___toast_ok.html", message="The world is reading your post !")
         tweet = {
             "user_first_name": user["user_first_name"],
             "user_last_name": user["user_last_name"],
             "user_username": user["user_username"],
             "user_avatar_path": user["user_avatar_path"],
-            "post_message": post 
+            "post_message": post,
+            "post_image_path": post_image_path
         }
+
         html_post_container = render_template("___post_container.html")
         html_post = render_template("_tweet.html", tweet=tweet)
+
         return f"""
             <browser mix-bottom="#toast">{toast_ok}</browser>
             <browser mix-top="#posts">{html_post}</browser>
             <browser mix-replace="#post_container">{html_post_container}</browser>
         """
+    
     except Exception as ex:
         ic(ex)
         if "db" in locals(): db.rollback()
