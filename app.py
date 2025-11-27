@@ -409,9 +409,16 @@ def profile():
 @x.no_cache
 def api_like_tweet():
     try:
-        button_unlike_tweet = render_template("___button_unlike_tweet.html")
+        user = session.get("user", "")
+        post_pk = request.args.get("post_pk")
+
+        db, cursor = x.db()
+        q = "INSERT INTO likes VALUES (%s, %s)"
+        cursor.execute(q, (user["user_pk"], post_pk))
+
+        button_unlike_tweet = render_template("___button_unlike_tweet.html", post_pk=post_pk)
         return f"""
-            <mixhtml mix-replace="#button_1">
+            <mixhtml mix-update="#like_container_{post_pk}">
                 {button_unlike_tweet}
             </mixhtml>
         """

@@ -1,3 +1,10 @@
-<button id="button_1" class="action" mix-patch="/like-tweet">
+<!-- <button id="button_1" class="action" mix-patch="/like-tweet">
     <i class="fa-regular fa-heart"></i> 
+</button> -->
+
+
+<button id="like_container_{{ tweet.post_pk }}" class="action"
+    mix-patch="{{ url_for('api_like_tweet', post_pk=tweet.post_pk) }}">
+    <i class="fa-regular fa-heart pointer-e-none"></i>
+    <span id="like_count_{{ tweet.post_pk }}">{{ tweet.post_total_likes }}</span>
 </button>
