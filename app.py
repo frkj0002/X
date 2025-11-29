@@ -433,6 +433,7 @@ def api_create_post():
 
         user_pk = user["user_pk"]        
         post_pk = uuid.uuid4().hex
+        post_created_at = int(time.time())
 
         # hent tekst fra formular
         post_text = request.form.get("post", "").strip()
@@ -460,8 +461,8 @@ def api_create_post():
             uploaded_file.save(safe_path)
         
         db, cursor = x.db()
-        q = "INSERT INTO posts VALUES(%s, %s, %s, %s, %s, %s)"
-        cursor.execute(q, (post_pk, user_pk, post, 0, post_image_path, 0))
+        q = "INSERT INTO posts VALUES(%s, %s, %s, %s, %s, %s, %s, %s)"
+        cursor.execute(q, (post_pk, user_pk, post, 0, post_image_path, post_created_at, 0, 0))
         db.commit()
         
         toast_ok = render_template("___toast_ok.html", message="The world is reading your post !")
@@ -499,6 +500,76 @@ def api_create_post():
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()    
+
+##############################
+@app.get("/edit-post")
+def edit_post():
+    try:
+        user = session.get("user")
+        post_pk = request.args.get("post_pk")
+
+        db, cursor = x.db()
+        q = "SELECT * FROM posts WHERE post_pk = %s AND post_user_fk = %s"
+        cursor.execute(q, (post_pk, user["user_pk"]))
+        post = cursor.fetchone()
+
+        edit_html = render_template("_edit_post.html", post=post)
+        return f"<browser mix-update='main'>{ edit_html }</browser>"
+
+    except Exception as ex:
+        return "error"
+
+##############################
+@app.post("/update-post")
+def update_profile():
+    try:
+        user = session.get("user", "")
+
+        post_pk = request.form.get("post_pk")  
+        post_updated_at = int(time.time())
+
+        post_text = request.form.get("post", "").strip()
+        post = None
+        uploaded_file = request.files.get("upload_image")
+        post_image_path = None
+
+        if uploaded_file and uploaded_file.filename != "":
+            filetype = uploaded_file.filename.rsplit('.', 1)[1].lower()
+            post_image_path = f"{uuid.uuid4().hex}.{filetype}"
+            safe_path = os.path.join(UPLOAD_POST_FOLDER, post_image_path)
+        
+        db,cursor = x.db()
+        if post_image_path: 
+            q = "UPDATE posts SET post_message = %s, post_image_path = %s, post_updated_at = %s WHERE post_pk = %s AND post_user_fk = %s"
+            cursor.execute(q, (post_text, post_image_path, post_updated_at, post_pk, user["user_pk"]))
+        
+        else: 
+            q = "UPDATE posts SET post_message = %s, post_updated_at = %s WHERE post_pk = %s AND post_user_fk = %s"
+            cursor.execute(q, (post_text, post_updated_at, post_pk, user["user_pk"]))
+        
+        db.commit()
+
+        toast_ok = render_template("___toast_ok.html", message="Your post has been updated!")
+        tweet = {
+            "user_first_name": user["user_first_name"],
+            "user_last_name": user["user_last_name"],
+            "user_username": user["user_username"],
+            "user_avatar_path": user["user_avatar_path"],
+            "post_message": post,
+            "post_image_path": post_image_path
+        }
+
+        html_post = render_template("_tweet.html", tweet=tweet)
+        return f"""<mixhtml mix-update="#post_{post_pk}">{html_post}</mixhtml>"""
+
+    except Exception as ex:
+        ic(ex)
+        if "db" in locals(): db.rollback()
+        return "Could not update post", 500
+    
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close() 
 
 ##############################
 @app.route("/delete-post", methods=["DELETE"])

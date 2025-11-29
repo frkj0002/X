@@ -21,7 +21,13 @@
             mix-remove="#post_{{ tweet.post_pk }}">
             <i class="fa-solid fa-trash"></i> Delete
         </a>
+
+        <a href="{{ url_for('edit_post', post_pk=tweet.post_pk) }}" class="cursor-pointer" mix-get>
+            Edit
+        </a>
         {% endif %}
+
+
 
         <p class="text">
             {{ tweet.post_message }}
