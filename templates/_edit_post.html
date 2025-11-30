@@ -1,8 +1,19 @@
 <article class="post" id="post_{{ post_pk }}">
-    <form class="post" id="post_{{ post_pk }}" mix-post="{{ url_for('api_update_post') }}" enctype="multipart/form-data">
+    <form class="post" id="post_{{ post_pk }}" mix-post="{{ url_for('api_update_post') }}"
+        enctype="multipart/form-data">
         <input type="hidden" name="post_pk" value="{{ post_pk }}">
         <textarea name="post">{{ post_message }}</textarea>
-        <input type="file" name="upload_image">
+
+        {% if post_image_path %}
+        <div class="current-image mb-2">
+            <p>Current image:</p>
+            <img src="{{ url_for('static', filename='images/post_images/' ~ post_image_path) }}" alt="Current image"
+                class="w-80">
+        </div>
+        {% endif %}
+
+        <!-- <input type="file" name="upload_image">  -->
+
         <button type="submit" class="pointer-e-none" mix-await="Updating..." mix-default="Save">Save</button>
     </form>
 </article>

@@ -553,28 +553,32 @@ def api_update_post():
             toast_error = render_template("___toast_error.html", message="Post must contain text")
             return f"<mixhtml mix-bottom='#toast'>{toast_error}</mixhtml>"
 
-        # håndtering af billedfilen
+        # Hent eksisterende post
+        db, cursor = x.db()
+        q = "SELECT post_image_path FROM posts WHERE post_pk=%s AND post_user_fk=%s"
+        cursor.execute(q, (post_pk, user_pk))
+        existing_post = cursor.fetchone()
+        if not existing_post:
+            return "Post not found"
+
+        # Start med det gamle billede
+        post_image_path = existing_post["post_image_path"]
+
+        # Håndtering af uploadet billede
         uploaded_file = request.files.get("upload_image")
-        post_image_path = None
         if uploaded_file and uploaded_file.filename != "":
             if not allowed_file(uploaded_file.filename):
                 toast_error = render_template("___toast_error.html", message="Invalid file type")
                 return f"<mixhtml mix-bottom='#toast'>{toast_error}</mixhtml>"
-            
-            # Hent filtypen, lav et unikt filnavn, lav fuld sti og gem filen på serveren
-            filetype = uploaded_file.filename.rsplit('.', 1)[1].lower()
+
+            filetype = uploaded_file.filename.rsplit(".", 1)[1].lower()
             post_image_path = f"{uuid.uuid4().hex}.{filetype}"
             safe_path = os.path.join(UPLOAD_POST_FOLDER, post_image_path)
             uploaded_file.save(safe_path)
 
-        # Opdater posten i databasen
-        db, cursor = x.db()
-        if post_image_path:
-            q = "UPDATE posts SET post_message=%s, post_image_path=%s, post_updated_at=%s WHERE post_pk=%s AND post_user_fk=%s"
-            cursor.execute(q, (post, post_image_path, post_updated_at, post_pk, user_pk))
-        else:
-            q = "UPDATE posts SET post_message=%s, post_updated_at=%s WHERE post_pk=%s AND post_user_fk=%s"
-            cursor.execute(q, (post, post_updated_at, post_pk, user_pk))
+        # Opdater posten med enten det gamle eller nye billede
+        q = "UPDATE posts SET post_message=%s, post_image_path=%s, post_updated_at=%s WHERE post_pk=%s AND post_user_fk=%s"
+        cursor.execute(q, (post, post_image_path, post_updated_at, post_pk, user_pk))
         db.commit()
 
         # Render opdateret tweet
