@@ -502,54 +502,82 @@ def api_create_post():
         if "db" in locals(): db.close()    
 
 ##############################
-@app.get("/edit-post")
-def edit_post():
+@app.route("/edit-post/<post_pk>", methods=["GET"])
+def edit_post(post_pk):
     try:
         user = session.get("user")
-        post_pk = request.args.get("post_pk")
+        if not user:
+            return "invalid user"
 
         db, cursor = x.db()
         q = "SELECT * FROM posts WHERE post_pk = %s AND post_user_fk = %s"
         cursor.execute(q, (post_pk, user["user_pk"]))
         post = cursor.fetchone()
 
-        edit_html = render_template("_edit_post.html", post=post)
-        return f"<browser mix-update='main'>{ edit_html }</browser>"
+        if not post:
+            return "Post not found"
+
+        edit_html = render_template("_edit_post.html", post_pk=post["post_pk"], post_message=post["post_message"], post_image_path=post["post_image_path"])
+
+        return f"<mixhtml mix-update='#post_{post_pk}'>{edit_html}</mixhtml>"
 
     except Exception as ex:
+        ic(ex)
         return "error"
+    
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close() 
+
 
 ##############################
-@app.post("/update-post")
-def update_profile():
+@app.route("/api-update-post", methods=["POST"])
+def api_update_post():
     try:
         user = session.get("user", "")
+        if not user: 
+            return "invalid user"
 
-        post_pk = request.form.get("post_pk")  
+        user_pk = user["user_pk"]        
+        post_pk = request.form.get("post_pk", "").strip()
         post_updated_at = int(time.time())
 
+        # hent tekst fra formular
         post_text = request.form.get("post", "").strip()
         post = None
+        if post_text:
+            post = x.validate_post(post_text)
+        
+        # hvis der ikke er tekst, kan det ikke opdateres
+        if not post:
+            toast_error = render_template("___toast_error.html", message="Post must contain text")
+            return f"<mixhtml mix-bottom='#toast'>{toast_error}</mixhtml>"
+
+        # håndtering af billedfilen
         uploaded_file = request.files.get("upload_image")
         post_image_path = None
-
         if uploaded_file and uploaded_file.filename != "":
+            if not allowed_file(uploaded_file.filename):
+                toast_error = render_template("___toast_error.html", message="Invalid file type")
+                return f"<mixhtml mix-bottom='#toast'>{toast_error}</mixhtml>"
+            
+            # Hent filtypen, lav et unikt filnavn, lav fuld sti og gem filen på serveren
             filetype = uploaded_file.filename.rsplit('.', 1)[1].lower()
             post_image_path = f"{uuid.uuid4().hex}.{filetype}"
             safe_path = os.path.join(UPLOAD_POST_FOLDER, post_image_path)
-        
-        db,cursor = x.db()
-        if post_image_path: 
-            q = "UPDATE posts SET post_message = %s, post_image_path = %s, post_updated_at = %s WHERE post_pk = %s AND post_user_fk = %s"
-            cursor.execute(q, (post_text, post_image_path, post_updated_at, post_pk, user["user_pk"]))
-        
-        else: 
-            q = "UPDATE posts SET post_message = %s, post_updated_at = %s WHERE post_pk = %s AND post_user_fk = %s"
-            cursor.execute(q, (post_text, post_updated_at, post_pk, user["user_pk"]))
-        
+            uploaded_file.save(safe_path)
+
+        # Opdater posten i databasen
+        db, cursor = x.db()
+        if post_image_path:
+            q = "UPDATE posts SET post_message=%s, post_image_path=%s, post_updated_at=%s WHERE post_pk=%s AND post_user_fk=%s"
+            cursor.execute(q, (post, post_image_path, post_updated_at, post_pk, user_pk))
+        else:
+            q = "UPDATE posts SET post_message=%s, post_updated_at=%s WHERE post_pk=%s AND post_user_fk=%s"
+            cursor.execute(q, (post, post_updated_at, post_pk, user_pk))
         db.commit()
 
-        toast_ok = render_template("___toast_ok.html", message="Your post has been updated!")
+        # Render opdateret tweet
         tweet = {
             "user_first_name": user["user_first_name"],
             "user_last_name": user["user_last_name"],
@@ -558,18 +586,24 @@ def update_profile():
             "post_message": post,
             "post_image_path": post_image_path
         }
-
         html_post = render_template("_tweet.html", tweet=tweet)
-        return f"""<mixhtml mix-update="#post_{post_pk}">{html_post}</mixhtml>"""
+        toast_ok = render_template("___toast_ok.html", message="Your post has been updated!")
+
+        # Returner som mixhtml, så siden opdateres live
+        return f"""
+            <mixhtml mix-update="#post_{post_pk}">{html_post}</mixhtml>
+            <mixhtml mix-bottom="#toast">{toast_ok}</mixhtml>
+        """
 
     except Exception as ex:
         ic(ex)
         if "db" in locals(): db.rollback()
-        return "Could not update post", 500
-    
+        toast_error = render_template("___toast_error.html", message="System under maintenance")
+        return f"<mixhtml mix-bottom='#toast'>{toast_error}</mixhtml>", 500
+
     finally:
         if "cursor" in locals(): cursor.close()
-        if "db" in locals(): db.close() 
+        if "db" in locals(): db.close()
 
 ##############################
 @app.route("/delete-post", methods=["DELETE"])

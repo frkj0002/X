@@ -1,8 +1,8 @@
-<article class="post" id="post_{{ post.post_pk }}" mix-fade-in="5000">
-    <form action="{{ url_for('update_post') }}" method="post" mix-post enctype="multipart/form-data">
-        <input type="hidden" name="post_pk" value="{{ post.post_pk }}">
-        <textarea name="post">{{ post.post_message }}</textarea>
+<article class="post" id="post_{{ post_pk }}">
+    <form mix-post="{{ url_for('api_update_post') }}" enctype="multipart/form-data">
+        <input type="hidden" name="post_pk" value="{{ post_pk }}">
+        <textarea name="post">{{ post_message }}</textarea>
         <input type="file" name="upload_image">
-        <button type="submit">Update Post</button>
-        </form>
+        <button type="submit" class="pointer-e-none" mix-await="Updating..." mix-default="Save">Save</button>
+    </form>
 </article>

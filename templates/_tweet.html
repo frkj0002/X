@@ -22,12 +22,14 @@
             <i class="fa-solid fa-trash"></i> Delete
         </a>
 
-        <a href="{{ url_for('edit_post', post_pk=tweet.post_pk) }}" class="cursor-pointer" mix-get>
-            Edit
+        <!-- <a href="#" class="cursor-pointer" onclick="editPost('{{ tweet.post_pk }}', '{{ tweet.post_message }}')">
+            <i class="fa-solid fa-pen"></i> Edit
+        </a> -->
+
+        <a href="{{ url_for('edit_post', post_pk=tweet.post_pk) }}" mix-get mix-update="#post_{{ tweet.post_pk }}">
+            <i class="fa-solid fa-pen"></i> Edit
         </a>
         {% endif %}
-
-
 
         <p class="text">
             {{ tweet.post_message }}
