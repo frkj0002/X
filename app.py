@@ -586,6 +586,7 @@ def api_update_post():
             "post_message": post,
             "post_image_path": post_image_path
         }
+
         html_post = render_template("_tweet.html", tweet=tweet)
         toast_ok = render_template("___toast_ok.html", message="Your post has been updated!")
 
