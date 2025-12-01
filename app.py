@@ -613,7 +613,23 @@ def api_update_profile():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
 
-
+##############################
+@app.route("/delete-profile", methods=["DELETE"])
+def delete_profile():
+    try:
+        user = session.get("user", "")
+        user_deleted_at = int(time.time())
+        db, cursor = x.db()
+        q = "UPDATE users SET user_deleted_at = %s WHERE user_pk = %s"
+        cursor.execute(q, (user_deleted_at, user["user_pk"]))
+        db.commit()
+        return f"""<browser mix-redirect="/signup"></browser>"""
+        # return redirect(url_for('signup'))
+    except Exception as ex:
+        ic(ex)
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
 
 ##############################
 @app.post("/api-search")
