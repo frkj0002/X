@@ -441,6 +441,38 @@ def followers():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
 
+##############################
+@app.patch("/follow-user")
+def api_follow_user():
+    try:
+        user = session.get("user", "")
+        user_to_follow = request.json.get("user_pk")
+        follow_created_at = int(time.time())
+        db, cursor = x.db()
+        q = "SELECT * FROM followers WHERE user_fk = %s AND follow_user_fk = %s"
+        cursor.execute(q, (user["user_pk"], user_to_follow))
+        existing = cursor.fetchone()
+
+        if existing:
+            q = "DELETE FROM followers WHERE user_fk = %s AND follow_user_fk = %s"
+            cursor.execute(q, (user["user_pk"], user_to_follow))
+            db.commit()
+            status = False
+        else:
+            q = "INSERT into followers VALUES (%s, %s, %s)"
+            cursor.execute(q, (user["user_pk"], user_to_follow, follow_created_at))
+            db.commit()
+            status = True
+        # button_follow_user = render_template("___button_follow_user.html", user_pk=user_to_follow, is_following=status)
+        # return f"""<mixhtml mix-update="follow_container_{user_pk}">{button_follow_user}</mixhtml>
+        # """
+    except Exception as ex:
+        ic(ex)
+        return "error"
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+
 
 ##############################
 @app.patch("/like-tweet")
