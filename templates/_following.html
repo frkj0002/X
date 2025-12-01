@@ -12,7 +12,11 @@
             </p>
 
         </div>
-        <button class="px-4 py-1 text-c-white bg-c-black rounded-lg">{{ x.lans("follow") }}</button>
+        {% set user_pk = following.user_pk %}
+        {% set is_following = following.is_following %}
+        <button id="follow_btn_{{ user_pk }}" class="action" mix-patch="{{ url_for('api_follow_user') }}">
+            {% include "___button_follow_user.html" %}
+        </button>
     </div>
 </div>
 {% endfor %}

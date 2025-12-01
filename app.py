@@ -463,9 +463,14 @@ def api_follow_user():
             cursor.execute(q, (user["user_pk"], user_to_follow, follow_created_at))
             db.commit()
             status = True
-        # button_follow_user = render_template("___button_follow_user.html", user_pk=user_to_follow, is_following=status)
-        # return f"""<mixhtml mix-update="follow_container_{user_pk}">{button_follow_user}</mixhtml>
-        # """
+        
+        button_follow_user = render_template("___button_follow_user.html", user_pk=user_to_follow, is_following=status, x=x)
+        return f"""
+            <mixhtml mix-update="#follow_btn_{user_to_follow}">
+                {button_follow_user}
+            </mixhtml>
+        """
+        
     except Exception as ex:
         ic(ex)
         return "error"
@@ -473,6 +478,9 @@ def api_follow_user():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
 
+# button_follow_user = render_template("___button_follow_user.html", user_pk=user_to_follow, is_following=status)
+        # return f"""<mixhtml mix-update="follow_container_{user_pk}">{button_follow_user}</mixhtml>
+        # """
 
 ##############################
 @app.patch("/like-tweet")

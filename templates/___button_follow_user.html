@@ -1,1 +1,5 @@
-<button id="follow_container_"></button>
+{% if is_following %}
+<span class="px-4 py-1 text-c-white bg-c-black rounded-lg">{{ x.lans("follow") }}</span>
+{% else %}
+<span class="px-4 py-1 text-c-black bg-c-white border-1 border-c-black rounded-lg">Unfollow</span>
+{% endif %}
