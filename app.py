@@ -515,7 +515,6 @@ def edit_post(post_pk):
         post = cursor.fetchone()
 
         edit_html = render_template("_edit_post.html", post_pk=post["post_pk"], post_message=post["post_message"], post_image_path=post["post_image_path"])
-
         return f"<mixhtml mix-update='#post_{post_pk}'>{edit_html}</mixhtml>"
 
     except Exception as ex:
@@ -545,7 +544,7 @@ def api_update_post():
         if post_text:
             post = x.validate_post(post_text)
         
-        # hvis der ikke er tekst, kan det ikke opdateres
+        # hvis der ikke er tekst
         if not post:
             toast_error = render_template("___toast_error.html", message="Post must contain text")
             return f"<mixhtml mix-bottom='#toast'>{toast_error}</mixhtml>"
@@ -574,7 +573,7 @@ def api_update_post():
             uploaded_file.save(safe_path)
 
         # Opdater posten med enten det gamle eller nye billede
-        q = "UPDATE posts SET post_message=%s, post_image_path=%s, post_updated_at=%s WHERE post_pk=%s AND post_user_fk=%s"
+        q = "UPDATE posts SET post_message = %s, post_image_path = %s, post_updated_at = %s WHERE post_pk = %s AND post_user_fk = %s"
         cursor.execute(q, (post, post_image_path, post_updated_at, post_pk, user_pk))
         db.commit()
 
@@ -640,9 +639,7 @@ def delete_post():
 ##############################
 @app.route("/api-update-profile", methods=["POST"])
 def api_update_profile():
-
     try:
-
         user = session.get("user", "")
         if not user: return "invalid user"
 
