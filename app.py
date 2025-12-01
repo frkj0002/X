@@ -81,7 +81,9 @@ def login(lan = "english"):
             db, cursor = x.db()
             cursor.execute(q, (user_email,))
             user = cursor.fetchone()
-            if not user: raise Exception(dictionary.user_not_found[lan], 400)
+            if not user: 
+                toast_error = render_template("___toast_error.html", message="user not found")
+                return f"<mixhtml mix-bottom='#toast'>{toast_error}</mixhtml>"
 
             if not check_password_hash(user["user_password"], user_password):
                 raise Exception(dictionary.invalid_credentials[lan], 400)
@@ -137,15 +139,19 @@ def signup(lan = "english"):
             user_avatar_path = ""
             user_verification_key = uuid.uuid4().hex
             user_verified_at = 0
+            user_total_followers = 0
+            user_total_following = 0
+            user_created_at = int(time.time())
+            user_updated_at = 0
             user_reset_password_key = 0
 
             user_hashed_password = generate_password_hash(user_password)
 
             # Connect to the database
-            q = "INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            q = "INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
             db, cursor = x.db()
             cursor.execute(q, (user_pk, user_email, user_hashed_password, user_reset_password_key, user_username, 
-            user_first_name, user_last_name, user_avatar_path, user_verification_key, user_verified_at))
+            user_first_name, user_last_name, user_avatar_path, user_verification_key, user_verified_at, user_total_followers, user_total_following, user_created_at, user_updated_at))
             db.commit()
 
             # send verification email
@@ -618,15 +624,29 @@ def api_update_profile():
 def delete_profile():
     try:
         user = session.get("user", "")
-        user_deleted_at = int(time.time())
         db, cursor = x.db()
-        q = "UPDATE users SET user_deleted_at = %s WHERE user_pk = %s"
-        cursor.execute(q, (user_deleted_at, user["user_pk"]))
+        q = """SELECT user_pk, user_created_at, 
+        user_total_followers AS archived_followers_count, 
+        user_total_following AS archived_following_count, 
+        (SELECT COUNT(*) FROM posts WHERE post_user_fk = user_pk) AS archived_posts_count,
+        (SELECT COUNT(*) FROM comments WHERE comment_user_fk = user_pk) AS archived_comments_count,
+        (SELECT COUNT(*) FROM likes WHERE likes.user_fk = user_pk) AS archived_likes_count
+        FROM users WHERE user_pk = %s
+        """
+        cursor.execute(q, (user["user_pk"],))
+        archived_user = cursor.fetchone()
+
+        q = "INSERT INTO archived_users VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+        cursor.execute(q, (user["user_pk"], archived_user["archived_posts_count"], archived_user["archived_comments_count"], archived_user["archived_likes_count"], archived_user["archived_followers_count"], archived_user["archived_following_count"], archived_user["user_created_at"], int(time.time())))
+        
+        q = "DELETE FROM users WHERE user_pk = %s"
+        cursor.execute(q, (user["user_pk"],))
         db.commit()
         return f"""<browser mix-redirect="/signup"></browser>"""
         # return redirect(url_for('signup'))
     except Exception as ex:
         ic(ex)
+        return "Error: deleting profile", 500
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
