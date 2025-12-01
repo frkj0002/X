@@ -514,9 +514,6 @@ def edit_post(post_pk):
         cursor.execute(q, (post_pk, user["user_pk"]))
         post = cursor.fetchone()
 
-        if not post:
-            return "Post not found"
-
         edit_html = render_template("_edit_post.html", post_pk=post["post_pk"], post_message=post["post_message"], post_image_path=post["post_image_path"])
 
         return f"<mixhtml mix-update='#post_{post_pk}'>{edit_html}</mixhtml>"
