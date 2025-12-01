@@ -1,0 +1,18 @@
+<h1>Following: </h1>
+
+{% for following in followings %}
+<div class="mt-2 border-c-gray:+50 border-1 rounded-md pa-2">
+    <div class="d-flex a-items-center">
+        <img src="{{ url_for('static', filename='images/user_avatars/' ~ (following.user_avatar_path if following.user_avatar_path else 'unknown.jpg')) }}"
+            class="w-8 h-8 rounded-full" alt="Profile Picture">
+        <div class="w-full ml-2">
+            <p class="">
+                {{ following.user_first_name }} {{ following.user_last_name }}
+                <span class="text-c-gray:+20 text-70">@{{ following.user_username }}</span>
+            </p>
+
+        </div>
+        <button class="px-4 py-1 text-c-white bg-c-black rounded-lg">{{ x.lans("follow") }}</button>
+    </div>
+</div>
+{% endfor %}

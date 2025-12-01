@@ -137,15 +137,17 @@ def signup(lan = "english"):
             user_avatar_path = ""
             user_verification_key = uuid.uuid4().hex
             user_verified_at = 0
+            user_total_followers = 0
+            user_total_following = 0
             user_reset_password_key = 0
 
             user_hashed_password = generate_password_hash(user_password)
 
             # Connect to the database
-            q = "INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            q = "INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
             db, cursor = x.db()
             cursor.execute(q, (user_pk, user_email, user_hashed_password, user_reset_password_key, user_username, 
-            user_first_name, user_last_name, user_avatar_path, user_verification_key, user_verified_at))
+            user_first_name, user_last_name, user_avatar_path, user_verification_key, user_verified_at, user_total_followers, user_total_following))
             db.commit()
 
             # send verification email
@@ -395,13 +397,49 @@ def profile():
         cursor.execute(q, (user["user_pk"],))
         user = cursor.fetchone()
         profile_html = render_template("_profile.html", x=x, user=user)
-        return f"""<browser mix-update="main">{ profile_html }</browser>"""
+        return f"""<browser mix-update="#main">{ profile_html }</browser>"""
     except Exception as ex:
         ic(ex)
         return "error"
     finally:
         pass
 
+##############################
+@app.get("/following")
+def following():
+    try:
+        user = session.get("user", "")
+        db, cursor = x.db()
+        # followers.user_fk is used to specify that the user_fk column is placed in the followers table. This is only necessary because, we also have a user_fk column in the likes table
+        q = "SELECT * FROM users JOIN followers ON user_pk = follow_user_fk WHERE followers.user_fk = %s"
+        cursor.execute(q, (user["user_pk"],))
+        followings = cursor.fetchall()
+        following_html = render_template("_following.html", x=x, followings=followings)
+        return f"""<browser mix-update="#main">{ following_html }</browser>"""
+    except Exception as ex:
+        ic(ex)
+        return "error"
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+
+##############################
+@app.get("/followers")
+def followers():
+    try:
+        user = session.get("user", "")
+        db, cursor = x.db()
+        q = "SELECT * FROM users JOIN followers ON user_pk = followers.user_fk WHERE follow_user_fk = %s"
+        cursor.execute(q, (user["user_pk"],))
+        followers = cursor.fetchall()
+        followers_html = render_template("_followers.html", x=x, followers=followers)
+        return f"""<browser mix-update="#main">{followers_html}</browser>"""
+    except Exception as ex:
+        ic(ex)
+        return "error"
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
 
 
 ##############################
