@@ -418,6 +418,29 @@ def profile():
     finally:
         pass
 
+##############################
+@app.get("/users")
+def users():
+    try:
+        user = session.get("user")
+        if not user or user.get("user_role", "").lower() != "admin":
+            return f"""<browser mix-redirect="/home"></browser>"""
+
+        # Hent alle brugere
+        db, cursor = x.db()
+        q = "SELECT * FROM users"
+        cursor.execute(q)
+        users = cursor.fetchall()
+
+        users_html = render_template("_users.html", users=users, admin=user)
+        return f"""<browser mix-update="main">{ users_html }</browser>"""
+    
+    except Exception as ex:
+        ic(ex)
+        return "error"
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
 
 
 ##############################
