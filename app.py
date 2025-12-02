@@ -454,7 +454,7 @@ def block_user():
 
         db,cursor = x.db()
         q = "UPDATE users SET user_blocked = 1 WHERE user_pk = %s"
-        cursor.execute(q, (user_pk))
+        cursor.execute(q, (user_pk,))
         db.commit()
 
         # Hent alle brugere igen
@@ -484,7 +484,7 @@ def unblock_user():
 
         db,cursor = x.db()
         q = "UPDATE users SET user_blocked = 0 WHERE user_pk = %s"
-        cursor.execute(q, (user_pk))
+        cursor.execute(q, (user_pk,))
         db.commit()
 
         # Hent alle brugere igen
