@@ -1,0 +1,5 @@
+<div class="comment p-2 border-b">
+    <img src="{{ url_for('static', filename='images/user_avatars/' ~ comment.user_avatar_path) }}" class="w-6 h-6 rounded-full">
+    <span>@{{ comment.user_username }}</span>
+    <p>{{ comment.comment_message }}</p>
+</div>
