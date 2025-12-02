@@ -422,17 +422,17 @@ def profile():
 @app.get("/users")
 def users():
     try:
-        user = session.get("user")
-        if not user or user.get("user_role", "").lower() != "admin":
+        admin = session.get("user")
+        if not admin or admin.get("user_role", "").lower() != "admin":
             return f"""<browser mix-redirect="/home"></browser>"""
 
         # Hent alle brugere
         db, cursor = x.db()
-        q = "SELECT * FROM users"
+        q = "SELECT * FROM users WHERE user_role = 'user'"
         cursor.execute(q)
         users = cursor.fetchall()
 
-        users_html = render_template("_users.html", users=users, admin=user)
+        users_html = render_template("_users.html", users=users)
         return f"""<browser mix-update="main">{ users_html }</browser>"""
     
     except Exception as ex:
@@ -442,6 +442,65 @@ def users():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
 
+##############################
+@app.post("/block_user")
+def block_user():
+    try:
+        admin = session.get("user")
+        if not admin or admin.get("user_role", "").lower() != "admin":
+            return f"""<browser mix-redirect="/home"></browser>"""
+        
+        user_pk = request.form.get("user")
+
+        db,cursor = x.db()
+        q = "UPDATE users SET user_blocked = 1 WHERE user_pk = %s"
+        cursor.execute(q, (user_pk))
+        db.commit()
+
+        # Hent alle brugere igen
+        q = "SELECT * FROM users WHERE user_role='user'"
+        cursor.execute(q)
+        users = cursor.fetchall()
+
+        users_html = render_template("_users.html", users=users)
+        return f"""<browser mix-update="main">{users_html}</browser>"""
+
+    except Exception as ex:
+            ic(ex)
+            return "error"
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+
+##############################
+@app.post("/unblock_user")
+def unblock_user():
+    try:
+        user = session.get("user")
+        if not user or user.get("user_role", "").lower() != "admin":
+            return f"""<browser mix-redirect="/home"></browser>"""
+        
+        user_pk = request.form.get("user")
+
+        db,cursor = x.db()
+        q = "UPDATE users SET user_blocked = 0 WHERE user_pk = %s"
+        cursor.execute(q, (user_pk))
+        db.commit()
+
+        # Hent alle brugere igen
+        q = "SELECT * FROM users WHERE user_role='user'"
+        cursor.execute(q)
+        users = cursor.fetchall()
+
+        users_html = render_template("_users.html", users=users)
+        return f"""<browser mix-update="main">{users_html}</browser>"""
+
+    except Exception as ex:
+            ic(ex)
+            return "error"
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
 
 ##############################
 @app.patch("/like-tweet")
