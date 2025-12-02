@@ -11,12 +11,12 @@
 
     <tbody>
         {% for u in users %}
-        <tr>
+        <tr id="user{{ u.user_pk }}">
             <td>@{{ u.user_username }}</td>
             <td>{{ u.user_email }}</td>
-            <td>{{ "Blocked" if u.user_blocked == 1 else "Active" }}</td>
+            <td>{{ "Blocked" if u.user_blocked == "1" else "Active" }}</td>
             <td>
-                {% if u.user_blocked %}
+                {% if u.user_blocked == "1" %}
                 <button mix-post="{{ url_for('unblock_user') }}" name="user" value="{{ u.user_pk }}">Unblock</button>
                 {% else %}
                 <button mix-post="{{ url_for('block_user') }}" name="user" value="{{ u.user_pk }}">Block</button>
