@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='mixhtml.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+
+    <script src="https://unpkg.com/mojocss"></script>
+
+    <title>
+        Fresh news
+    </title>
+</head>
+
+<body m-load style="display:none">
+
+    <div id="toast"></div>
+
+    <div id="container">
+        <button class="burger" aria-label="Menu">
+            <i class="fa-solid fa-bars"></i>
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        
+        <nav>
+            <ul>
+                <li><a href="#"><i class="fa-brands fa-x-twitter"></i></a></li>
+
+
+                <li>
+                    <a href="/home-comp" mix-get><i class="fa-solid fa-house"></i>
+                        <span class="pointer-e-none">Admin-page</span>
+                    </a>
+                </li>
+
+
+                <li><a href="#"><i class="fa-solid fa-magnifying-glass"></i><span>{{ x.lans("explore") }}</span></a>
+                </li>
+                <li><a href="#"><i class="fa-regular fa-bell"></i><span>{{ x.lans("notifications") }}</span></a></li>
+                <li><a href="#"><i class="fa-regular fa-envelope"></i><span>{{ x.lans("messages") }}</span></a></li>
+                <li><a href="#"><i class="fa-solid fa-atom"></i><span>Grok</span></a></li>
+                <li><a href="#"><i class="fa-regular fa-bookmark"></i><span>{{ x.lans("bookmarks") }}</span></a></li>
+                <li><a href="#"><i class="fa-solid fa-briefcase"></i><span>{{ x.lans("jobs") }}</span></a></li>
+                <li><a href="#"><i class="fa-solid fa-users"></i><span></span></a></li>
+                <li><a href="#"><i class="fa-solid fa-star"></i><span></span></a></li>
+
+                <li><a href="#"><i class="fa-solid fa-ellipsis"></i><span>{{ x.lans("more") }}</span></a></li>
+                <li><a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i><span>{{
+                            x.lans("logout") }}</span></a></li>
+            </ul>
+
+            <div id="profile_tag">
+                <img class="picture"
+                    src="{{ url_for('static', filename='images/user_avatars/' ~ (user.user_avatar_path if user.user_avatar_path else 'unknown.jpg')) }}"
+                    alt="Profile picture">
+                <div>
+                    <div class="name">
+                        {{ user.user_first_name }}
+                    </div>
+                    <div class="handle">
+                        @{{ user.user_username }}
+                    </div>
+                </div>
+                <i class="fa-solid fa-ellipsis option"></i>
+            </div>
+        </nav>
+
+        <main class="px-4">
+
+            
+        </main>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='mixhtml.js') }}"></script>
+
+    <script>
+        mojo()
+    </script>
+
+</body>
+
+</html>

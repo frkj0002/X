@@ -92,9 +92,12 @@ def login(lan = "english"):
                 raise Exception(dictionary.user_not_verified[lan], 400)
 
             user.pop("user_password")
-
             session["user"] = user
-            return f"""<browser mix-redirect="/home"></browser>"""
+
+            if user.get("user_role") == "admin":
+                return f"""<browser mix-redirect="/home-admin"></browser>"""
+            else:
+                return f"""<browser mix-redirect="/home"></browser>"""
 
         except Exception as ex:
             ic(ex)
@@ -144,13 +147,14 @@ def signup(lan = "english"):
             user_created_at = int(time.time())
             user_updated_at = 0
             user_reset_password_key = 0
+            user_role = "user"
 
             user_hashed_password = generate_password_hash(user_password)
 
             # Connect to the database
-            q = "INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            q = "INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
             db, cursor = x.db()
-            cursor.execute(q, (user_pk, user_email, user_hashed_password, user_reset_password_key, user_username, 
+            cursor.execute(q, (user_pk, user_role, user_email, user_hashed_password, user_reset_password_key, user_username, 
             user_first_name, user_last_name, user_avatar_path, user_verification_key, user_verified_at, user_total_followers, user_total_following, user_created_at, user_updated_at))
             db.commit()
 
@@ -217,6 +221,12 @@ def home():
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
+
+##############################
+@app.get("/home-admin")
+def home_admin():
+    user = session.get("user")
+    return render_template("home_admin.html", user=user)
 
 ##############################
 @app.route("/verify-account", methods=["GET"])
