@@ -17,9 +17,17 @@
             <td>{{ "Blocked" if u.user_blocked == "1" else "Active" }}</td>
             <td>
                 {% if u.user_blocked == "1" %}
-                <button mix-post="{{ url_for('unblock_user') }}" name="user" value="{{ u.user_pk }}">Unblock</button>
+                
+                <form method="post" class="action" mix-post="{{ url_for('unblock_user') }}">
+                    <input type="hidden" name="user" value="{{ u.user_pk }}">
+                    <button type="submit">Unblock</button>
+                </form>
                 {% else %}
-                <button mix-post="{{ url_for('block_user') }}" name="user" value="{{ u.user_pk }}">Block</button>
+                
+                <form method="post" class="action" mix-post="{{ url_for('block_user') }}">
+                    <input type="hidden" name="user" value="{{ u.user_pk }}">
+                    <button type="submit">Block</button>
+                </form>
                 {% endif %}
             </td>
         </tr>
