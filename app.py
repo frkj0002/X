@@ -602,7 +602,7 @@ def posts():
 
         # Hent alle posts
         db, cursor = x.db()
-        q = "SELECT * FROM posts ORDER BY post_created_at DESC"
+        q = "SELECT posts.*, users.user_username FROM posts JOIN users ON posts.post_user_fk = users.user_pk ORDER BY post_created_at DESC"
         cursor.execute(q)
         posts = cursor.fetchall()
 
