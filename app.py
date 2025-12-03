@@ -625,12 +625,24 @@ def block_post():
             return '<browser mix-redirect="/home"></browser>'
         
         post_pk = request.form.get("post")
-
         db,cursor = x.db()
+
+        # Hent brugerens info til mail
+        q = "SELECT users.user_email, users.user_first_name FROM users JOIN posts ON users.user_pk = posts.post_user_fk WHERE posts.post_pk = %s"
+        cursor.execute(q, (post_pk,))
+        user = cursor.fetchone()
+
+        # Bloker posten
         q = "UPDATE posts SET post_blocked = 1 WHERE post_pk = %s"
         cursor.execute(q, (post_pk,))
         db.commit()
 
+        # Send mail
+        if user: 
+            email_post_blocked = render_template("_email_post_blocked.html", user_first_name=user["user_first_name"])
+            x.send_email(user["user_email"], "Din post er blevet blokeret", email_post_blocked)
+
+        # Hent alle posts igen
         q = "SELECT * FROM posts ORDER BY post_created_at DESC"
         cursor.execute(q)
         posts = cursor.fetchall()
@@ -654,12 +666,24 @@ def unblock_post():
             return '<browser mix-redirect="/home"></browser>'
         
         post_pk = request.form.get("post")
-
         db,cursor = x.db()
+
+        # Hent brugerens info til mail
+        q = "SELECT users.user_email, users.user_first_name FROM users JOIN posts ON users.user_pk = posts.post_user_fk WHERE posts.post_pk = %s"
+        cursor.execute(q, (post_pk,))
+        user = cursor.fetchone()
+
+        # Fjern blokering
         q = "UPDATE posts SET post_blocked = 0 WHERE post_pk = %s"
         cursor.execute(q, (post_pk,))
         db.commit()
 
+        # Send mail
+        if user: 
+            email_post_unblocked = render_template("_email_post_unblocked.html", user_first_name=user["user_first_name"])
+            x.send_email(user["user_email"], "Din post er blevet blokeret", email_post_unblocked)
+
+        # Hent alle posts igen
         q = "SELECT * FROM posts ORDER BY post_created_at DESC"
         cursor.execute(q)
         posts = cursor.fetchall()
