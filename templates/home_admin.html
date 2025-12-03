@@ -39,8 +39,17 @@
                     </a>
                 </li>
 
-                
-                <li><a href="#posts"><i class="fa-solid fa-file-lines"></i><span>Posts</span></a></li>
+
+                <li>
+                    <a href="/posts" mix-get mix-default="<i class='fa-solid fa-file-lines'></i> Posts"
+                        mix-await="Loading ...">
+                        <i class="fa-solid fa-file-lines"></i>
+                        <span class="pointer-e-none">Posts</span>
+                    </a>
+                </li>
+
+
+
                 <li><a href="#languages"><i class="fa-solid fa-language"></i><span>Languages</span></a></li>
 
                 <li><a href="#"><i class="fa-solid fa-ellipsis"></i><span>{{ x.lans("more") }}</span></a></li>

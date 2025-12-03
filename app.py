@@ -530,6 +530,88 @@ def api_like_tweet():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
 
+##############################
+@app.get("/posts")
+def posts():
+    try:
+        admin = session.get("user")
+        if not admin or admin.get("user_role", "").lower() != "admin":
+            return f"""<browser mix-redirect="/home"></browser>"""
+
+        # Hent alle posts
+        db, cursor = x.db()
+        q = "SELECT * FROM posts ORDER BY post_created_at DESC"
+        cursor.execute(q)
+        posts = cursor.fetchall()
+
+        post_html = render_template("_posts.html", posts=posts)
+        return f'<browser mix-update="main">{post_html}</browser>'
+    
+    except Exception as ex:
+        ic(ex)
+        return "error"
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+
+##############################
+@app.post("/block-post")
+def block_post():
+    try: 
+        user = session.get("user")
+        if not user or user.get("user_role") != "admin":
+            return '<browser mix-redirect="/home"></browser>'
+        
+        post_pk = request.form.get("post")
+
+        db,cursor = x.db()
+        q = "UPDATE posts SET post_blocked = 1 WHERE post_pk = %s"
+        cursor.execute(q, (post_pk,))
+        db.commit()
+
+        q = "SELECT * FROM posts ORDER BY post_created_at DESC"
+        cursor.execute(q)
+        posts = cursor.fetchall()
+
+        post_html = render_template("_posts.html", posts=posts)
+        return f"""<browser mix-update="main">{post_html}</browser>"""
+
+    except Exception as ex:
+            ic(ex)
+            return "error"
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()  
+
+##############################
+@app.post("/unblock-post")
+def unblock_post():
+    try: 
+        user = session.get("user")
+        if not user or user.get("user_role") != "admin":
+            return '<browser mix-redirect="/home"></browser>'
+        
+        post_pk = request.form.get("post")
+
+        db,cursor = x.db()
+        q = "UPDATE posts SET post_blocked = 0 WHERE post_pk = %s"
+        cursor.execute(q, (post_pk,))
+        db.commit()
+
+        q = "SELECT * FROM posts ORDER BY post_created_at DESC"
+        cursor.execute(q)
+        posts = cursor.fetchall()
+
+        post_html = render_template("_posts.html", posts=posts)
+        return f"""<browser mix-update="main">{post_html}</browser>"""
+
+    except Exception as ex:
+            ic(ex)
+            return "error"
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()  
+        
 
 ##############################
 @app.route("/api-create-post", methods=["POST"])
