@@ -493,7 +493,7 @@ def block_user():
         user_pk = request.form.get("user")
         db,cursor = x.db()
 
-        # Før vi blokering, hent brugerens info til email
+        # Hent brugerens info til mail
         q = "SELECT user_email, user_first_name FROM users WHERE user_pk = %s"
         cursor.execute(q, (user_pk,))
         user = cursor.fetchone()
@@ -532,11 +532,22 @@ def unblock_user():
             return f"""<browser mix-redirect="/home"></browser>"""
         
         user_pk = request.form.get("user")
-
         db,cursor = x.db()
+
+        # Hent brugerens info til mail
+        q = "SELECT user_email, user_first_name FROM users WHERE user_pk = %s"
+        cursor.execute(q, (user_pk,))
+        user = cursor.fetchone()
+
+        # Unblock brugeren
         q = "UPDATE users SET user_blocked = 0 WHERE user_pk = %s"
         cursor.execute(q, (user_pk,))
         db.commit()
+
+        # Send email
+        if user:
+            email_user_unblocked = render_template("_email_user_unblocked.html", user_first_name=user["user_first_name"])
+            x.send_email(user["user_email"], "Din konto er blevet genaktiveret", email_user_unblocked)
 
         # Hent alle brugere igen
         q = "SELECT * FROM users WHERE user_role='user'"
