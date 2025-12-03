@@ -491,11 +491,22 @@ def block_user():
             return f"""<browser mix-redirect="/home"></browser>"""
         
         user_pk = request.form.get("user")
-
         db,cursor = x.db()
+
+        # Før vi blokering, hent brugerens info til email
+        q = "SELECT user_email, user_first_name FROM users WHERE user_pk = %s"
+        cursor.execute(q, (user_pk,))
+        user = cursor.fetchone()
+
+        # Bloker brugeren
         q = "UPDATE users SET user_blocked = 1 WHERE user_pk = %s"
         cursor.execute(q, (user_pk,))
         db.commit()
+
+        # Send email
+        if user: 
+            email_user_blocked = render_template("_email_user_blocked.html", user_first_name=user["user_first_name"])
+            x.send_email(user["user_email"], "Din konto er blevet blokeret", email_user_blocked)
 
         # Hent alle brugere igen
         q = "SELECT * FROM users WHERE user_role='user'"
