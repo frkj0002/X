@@ -10,22 +10,22 @@
     </thead>
 
     <tbody>
-        {% for u in users %}
-        <tr id="user{{ u.user_pk }}">
-            <td>@{{ u.user_username }}</td>
-            <td>{{ u.user_email }}</td>
-            <td>{{ "Blocked" if u.user_blocked == "1" else "Active" }}</td>
+        {% for user in users %}
+        <tr id="user{{ user.user_pk }}">
+            <td>@{{ user.user_username }}</td>
+            <td>{{ user.user_email }}</td>
+            <td>{{ "Blocked" if user.user_blocked == "1" else "Active" }}</td>
             <td>
-                {% if u.user_blocked == "1" %}
+                {% if user.user_blocked == "1" %}
                 
                 <form method="post" class="action" mix-post="{{ url_for('unblock_user') }}">
-                    <input type="hidden" name="user" value="{{ u.user_pk }}">
+                    <input type="hidden" name="user" value="{{ user.user_pk }}">
                     <button type="submit">Unblock</button>
                 </form>
                 {% else %}
                 
                 <form method="post" class="action" mix-post="{{ url_for('block_user') }}">
-                    <input type="hidden" name="user" value="{{ u.user_pk }}">
+                    <input type="hidden" name="user" value="{{ user.user_pk }}">
                     <button type="submit">Block</button>
                 </form>
                 {% endif %}

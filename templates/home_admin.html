@@ -29,7 +29,8 @@
         <nav>
             <ul>
                 <li><a href="#"><i class="fa-brands fa-x-twitter"></i></a></li>
-                <li><a href="#" mix-get><i class="fa-solid fa-house"></i><span class="pointer-e-none">Admin-page</span></a></li>
+                <li><a href="#" mix-get><i class="fa-solid fa-house"></i><span
+                            class="pointer-e-none">Admin-page</span></a></li>
 
                 <li>
                     <a href="/users" mix-get mix-default="<i class='fa-solid fa-users'></i> Users"
@@ -47,7 +48,7 @@
                         <span class="pointer-e-none">Posts</span>
                     </a>
                 </li>
-                
+
                 <li>
                     <a href="/languages" mix-get mix-default="<i class='fa-solid fa-language'></i> Languages"
                         mix-await="Loading ...">
@@ -57,7 +58,8 @@
                 </li>
 
                 <li><a href="#"><i class="fa-solid fa-ellipsis"></i><span>{{ x.lans("more") }}</span></a></li>
-                <li><a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i><span>{{x.lans("logout") }}</span></a></li>
+                
+                <li><a href="{{ url_for('logout') }}"><iclass="fa-solid fa-right-from-bracket"></iclass=><span>{{x.lans("logout") }}</span></a></li>
 
             </ul>
 
@@ -77,7 +79,18 @@
             </div>
         </nav>
 
-        <main class="px-4"></main>
+
+        <main class="px-4">
+            <h1>Admin Dashboard</h1>
+
+            <ul>
+                <li>Total Users: {{ total_users }}</li>
+                <li>Total Posts: {{ total_posts }}</li>
+                <li>Blocked Users: {{ blocked_users }}</li>
+                <li>Blocked Posts: {{ blocked_posts }}</li>
+            </ul>
+
+        </main>
 
     </div>
 
@@ -88,4 +101,5 @@
     </script>
 
 </body>
+
 </html>

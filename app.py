@@ -225,8 +225,48 @@ def home():
 ##############################
 @app.get("/home-admin")
 def home_admin():
-    user = session.get("user")
-    return render_template("home_admin.html", user=user)
+    try:
+        admin = session.get("user")
+        if not admin or admin.get("user_role", "").lower() != "admin":
+            return '<browser mix-redirect="/home"></browser>'
+
+        db, cursor = x.db()
+
+        # Antal brugere
+        q = "SELECT COUNT(*) AS count FROM users WHERE user_role='user'"
+        cursor.execute(q)
+        total_users = cursor.fetchone()['count']
+
+        # Antal posts
+        q = "SELECT COUNT(*) AS count FROM posts"
+        cursor.execute(q)
+        total_posts = cursor.fetchone()['count']
+
+        # Antal blokerede brugere
+        q = "SELECT COUNT(*) AS count FROM users WHERE user_blocked='1'"
+        cursor.execute(q)
+        blocked_users = cursor.fetchone()['count']
+
+        # Antal blokerede posts
+        q = "SELECT COUNT(*) AS count FROM posts WHERE post_blocked='1'"
+        cursor.execute(q)
+        blocked_posts = cursor.fetchone()['count']
+
+        return render_template("home_admin.html",
+                               user=admin,
+                               total_users=total_users,
+                               total_posts=total_posts,
+                               blocked_users=blocked_users,
+                               blocked_posts=blocked_posts)
+    
+    except Exception as ex:
+        ic(ex)
+        return "error"
+    
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+    
 
 ##############################
 @app.route("/verify-account", methods=["GET"])
@@ -889,7 +929,7 @@ def get_data_from_sheet():
 
         # Save data to the file
         with open("dictionary.json", 'w', encoding='utf-8') as f:
-            f.write(json_data)
+            f.write(json_data) # skriv JSON-strengen til filen dictionary.json
 
         return "ok"
     except Exception as ex:
@@ -913,7 +953,7 @@ def languages():
 
         # Læs dictionary fra fil
         with open("dictionary.json", encoding="utf-8") as f:
-            data = json.load(f)
+            data = json.load(f) # konverter JSON-filen tilbage til et Python dictionary
 
         languages_html = render_template("_languages.html", languages=data)
         return f"""<browser mix-update="main">{languages_html}</browser>"""
