@@ -685,7 +685,7 @@ def add_comment():
         }
 
         html_comment = render_template("_comment.html", comment=comment)
-        return f"""<mixhtml mix-append="#comment_list_{post_pk}">{html_comment}</mixhtml>"""
+        return f"""<mixhtml mix-append="#comments_list_{post_pk}">{html_comment}</mixhtml>"""
 
     except Exception as ex:
         ic(ex)

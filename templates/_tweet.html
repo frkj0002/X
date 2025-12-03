@@ -55,7 +55,7 @@
                 <input type="text" name="comment" id="comment_input_{{ tweet.post_pk }}"
                     placeholder="Write a comment..." class="comment-input">
                 <button type="submit" mix-post="{{ url_for('add_comment') }}"
-                    mix-bottom="#comment_list_{{ tweet.post_pk }}" mix-default="Add Comment" mix-await="Posting...">
+                    mix-bottom="#comments_list_{{ tweet.post_pk }}" mix-default="Add Comment" mix-await="Posting...">
                     Add Comment
                 </button>
             </form>
