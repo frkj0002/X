@@ -47,10 +47,14 @@
                         <span class="pointer-e-none">Posts</span>
                     </a>
                 </li>
-
-
-
-                <li><a href="#languages"><i class="fa-solid fa-language"></i><span>Languages</span></a></li>
+                
+                <li>
+                    <a href="/languages" mix-get mix-default="<i class='fa-solid fa-language'></i> Languages"
+                        mix-await="Loading ...">
+                        <i class="fa-solid fa-language"></i>
+                        <span class="pointer-e-none">Languages</span>
+                    </a>
+                </li>
 
                 <li><a href="#"><i class="fa-solid fa-ellipsis"></i><span>{{ x.lans("more") }}</span></a></li>
                 <li><a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i><span>{{x.lans("logout") }}</span></a></li>

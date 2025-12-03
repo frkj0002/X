@@ -1,0 +1,26 @@
+<h1>Languages Admin</h1>
+
+<form method="post" class="action" mix-post="{{ url_for('languages') }}" mix-await="Loading ...">
+    <button type="submit">Update from Google Sheet</button>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>Key</th>
+            <th>English</th>
+            <th>Danish</th>
+            <th>Spanish</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for key, translations in languages.items() %}
+        <tr>
+            <td>{{ key }}</td>
+            <td>{{ translations.english }}</td>
+            <td>{{ translations.danish }}</td>
+            <td>{{ translations.spanish }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

@@ -897,3 +897,28 @@ def get_data_from_sheet():
         return str(ex)
     finally:
         pass
+
+@app.route("/languages", methods=["GET", "POST"])
+def languages():
+    try:
+        admin = session.get("user")
+        if not admin or admin.get("user_role", "").lower() != "admin":
+            return '<browser mix-redirect="/home"></browser>'
+
+        # Hvis det er POST, opdater fra Google Sheet
+        if request.method == "POST":
+            get_data_from_sheet()
+            toast_ok = render_template("___toast_ok.html", message="Languages are updated!")
+            return f"""<mixhtml mix-update="#toast">{toast_ok}</mixhtml>"""
+
+        # Læs dictionary fra fil
+        with open("dictionary.json", encoding="utf-8") as f:
+            data = json.load(f)
+
+        languages_html = render_template("_languages.html", languages=data)
+        return f"""<browser mix-update="main">{languages_html}</browser>"""
+
+
+    except Exception as ex:
+        ic(ex)
+        return "error"
