@@ -228,7 +228,6 @@ def home():
         cursor.execute(q)
         trends = cursor.fetchall()
 
-
         # Hent forslag til brugere
         q = "SELECT * FROM users WHERE user_pk != %s ORDER BY RAND() LIMIT 3"
         cursor.execute(q, (user["user_pk"],))
@@ -753,9 +752,6 @@ def api_create_post():
         if not user: 
             return "invalid user"
 
-        user_pk = user["user_pk"]        
-        post_pk = uuid.uuid4().hex
-
         # hent tekst fra formular
         post_text = request.form.get("post", "").strip()
         post = None
@@ -781,9 +777,17 @@ def api_create_post():
             safe_path = os.path.join(UPLOAD_POST_FOLDER, post_image_path)
             uploaded_file.save(safe_path)
         
+        post_pk = uuid.uuid4().hex
+        post_blocked = 0
+        post_total_likes = 0
+        post_total_comments = 0
+        post_created_at = 0
+        post_updated_at = 0
+        post_deleted_at = 0
+
         db, cursor = x.db()
-        q = "INSERT INTO posts VALUES(%s, %s, %s, %s, %s, %s)"
-        cursor.execute(q, (post_pk, user_pk, post, 0, post_image_path, 0))
+        q = "INSERT INTO posts VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        cursor.execute(q, (post_pk, post_blocked, user["user_pk"] , post, post_total_likes, post_total_comments, post_image_path, post_created_at, post_updated_at, post_deleted_at))
         db.commit()
         
         toast_ok = render_template("___toast_ok.html", message="The world is reading your post !")
