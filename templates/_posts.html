@@ -1,0 +1,42 @@
+<h1>All posts</h1>
+<table style="width: 100%; table-layout: fixed;">
+    <thead>
+            <tr>
+                <th>Username</th>
+                <th>Post</th>
+                <th style="width: 10%;" class="pe-5">Status</th>
+                <th style="width: 10%;">Action</th>
+            </tr>
+    </thead>
+
+    <tbody>
+        {% for post in posts %}
+        <tr id="post{{ post.post_pk }}">
+            <td>@{{ post.user_username}}</td>
+            <td>{{ post.post_message }}</td>
+            <td>
+                {{ "Blocked" if post.post_blocked == "1" else "Active" }}
+            </td>
+            <td>
+
+                {% if post.post_blocked == "1" %}
+
+                <form method="post" class="action" mix-post="{{ url_for('unblock_post') }}">
+                    <input type="hidden" name="post" value="{{ post.post_pk }}">
+                    <button type="submit">Unblock</button>
+                </form>
+
+                {% else %}
+
+                <form method="post" class="action" mix-post="{{ url_for('block_post') }}">
+                    <input type="hidden" name="post" value="{{ post.post_pk }}">
+                    <button type="submit">Block</button>
+                </form>
+
+                {% endif %}
+
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
