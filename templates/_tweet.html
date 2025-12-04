@@ -62,31 +62,5 @@
             <span class="action"><i class="fa-solid fa-chart-simple"></i> 230</span>
             <span class="action"><i class="fa-solid fa-share"></i></span>
         </div>
-<<<<<<< HEAD
-
-        <div class="post-actions">
-            <form class="action">
-                <input type="hidden" name="post_pk" value="{{ tweet.post_pk }}">
-                <input type="text" name="comment" id="comment_input_{{ tweet.post_pk }}"
-                    placeholder="Write a comment..." class="comment-input">
-                <button type="submit" mix-post="{{ url_for('add_comment') }}"
-                    mix-bottom="#comments_list_{{ tweet.post_pk }}" mix-default="Add Comment" mix-await="Posting...">
-                    Add Comment
-                </button>
-            </form>
-        </div>
-
-        <!-- Comment section -->
-        <div class="comments-section" id="comments_{{ tweet.post_pk }}">
-            <div id="comments_list_{{ tweet.post_pk }}">
-                {% for comment in tweet.comments %}
-                {% include "_comment.html" %}
-                {% endfor %}
-            </div>
-        </div>
-
-</article>
-=======
     </div>
 </article>
->>>>>>> main
