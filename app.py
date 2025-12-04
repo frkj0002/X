@@ -138,6 +138,10 @@ def signup(lan = "english"):
             user_first_name = x.validate_user_first_name()
 
             user_pk = uuid.uuid4().hex
+            user_role = "user"
+            user_blocked = 0
+            user_hashed_password = generate_password_hash(user_password)
+            user_reset_password_key = 0
             user_last_name = ""
             user_avatar_path = ""
             user_verification_key = uuid.uuid4().hex
@@ -146,15 +150,12 @@ def signup(lan = "english"):
             user_total_following = 0
             user_created_at = int(time.time())
             user_updated_at = 0
-            user_reset_password_key = 0
-            user_role = "user"
 
-            user_hashed_password = generate_password_hash(user_password)
 
             # Connect to the database
-            q = "INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            q = "INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
             db, cursor = x.db()
-            cursor.execute(q, (user_pk, user_role, user_email, user_hashed_password, user_reset_password_key, user_username, 
+            cursor.execute(q, (user_pk, user_role, user_blocked, user_email, user_hashed_password, user_reset_password_key, user_username, 
             user_first_name, user_last_name, user_avatar_path, user_verification_key, user_verified_at, user_total_followers, user_total_following, user_created_at, user_updated_at))
             db.commit()
 
