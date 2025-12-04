@@ -30,11 +30,11 @@
             <span class="action"><i class="fa-solid fa-retweet"></i> 5</span>
             
             <div id="like_container_{{ tweet.post_pk }}">
-                <form method="post" class="action" mix-post="{{ url_for('like_toggle') }}">
+                <form method="post" class="action cursor-pointer" mix-post="{{ url_for('like_toggle') }}">
                     <input type="hidden" name="post_pk" value="{{ tweet.post_pk }}">
-                    <button type="submit" class="action">
+                    <button type="submit" class="action pointer-e-none">
                         
-                        <span id="like_icon_{{ tweet.post_pk }}">
+                        <span id="like_icon_{{ tweet.post_pk }}" class="pointer-e-none">
                             {% if tweet.user_liked %}
                             <i class="fa-solid fa-heart"></i>
                             {% else %}
