@@ -782,7 +782,7 @@ def api_create_post():
         post_blocked = 0
         post_total_likes = 0
         post_total_comments = 0
-        post_created_at = 0
+        post_created_at = int(time.time())
         post_updated_at = 0
         post_deleted_at = 0
 
