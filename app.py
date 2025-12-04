@@ -197,27 +197,55 @@ def signup(lan = "english"):
 def home():
     try:
         user = session.get("user", "")
-        if not user: return redirect(url_for("login"))
-        db, cursor = x.db()
-        q = "SELECT * FROM users JOIN posts ON user_pk = post_user_fk AND post_deleted_at = 0 ORDER BY RAND() LIMIT 5"
-        cursor.execute(q, (0))
-        tweets = cursor.fetchall()
-        ic(tweets)
+        if not user:
+            return redirect(url_for("login"))
 
+        db, cursor = x.db()
+
+        # Hent posts inkl. om brugeren har liket og post_total_likes fra kolonnen i posts
+        q = """
+        SELECT
+        posts.*,
+        users.*,
+        posts.post_total_likes,
+        EXISTS(
+            SELECT 1
+            FROM likes
+            WHERE post_fk = posts.post_pk
+            AND user_fk = %s
+        ) AS user_liked
+        FROM posts
+        JOIN users ON users.user_pk = posts.post_user_fk
+        WHERE posts.post_deleted_at = 0
+        ORDER BY posts.post_created_at DESC
+        LIMIT 5
+        """
+        cursor.execute(q, (user["user_pk"],))
+        tweets = cursor.fetchall()
+
+        # Hent trends
         q = "SELECT * FROM trends ORDER BY RAND() LIMIT 3"
         cursor.execute(q)
         trends = cursor.fetchall()
-        ic(trends)
 
+
+        # Hent forslag til brugere
         q = "SELECT * FROM users WHERE user_pk != %s ORDER BY RAND() LIMIT 3"
         cursor.execute(q, (user["user_pk"],))
         suggestions = cursor.fetchall()
-        ic(suggestions)
 
-        return render_template("home.html", tweets=tweets, trends=trends, suggestions=suggestions, user=user)
+        return render_template(
+            "home.html",
+            tweets=tweets,
+            trends=trends,
+            suggestions=suggestions,
+            user=user
+        )
+    
     except Exception as ex:
         ic(ex)
         return "error"
+    
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -565,26 +593,44 @@ def unblock_user():
         if "db" in locals(): db.close()
 
 ##############################
-@app.patch("/like-tweet")
-@x.no_cache
-def api_like_tweet():
+@app.post("/like-toggle")
+def like_toggle():
     try:
         user = session.get("user", "")
-        post_pk = request.args.get("post_pk")
+        post_pk = request.form.get("post_pk")
         like_created_at = int(time.time())
 
         db, cursor = x.db()
-        q = "INSERT INTO likes VALUES (%s, %s, %s)"
-        cursor.execute(q, (user["user_pk"], post_pk, like_created_at))
+
+        # Check om brugeren allerede har liket
+        q = "SELECT 1 FROM likes WHERE user_fk = %s AND post_fk = %s"
+        cursor.execute(q, (user["user_pk"], post_pk))
+        already_liked = cursor.fetchone()
+
+        if already_liked:
+            q = "DELETE FROM likes WHERE user_fk=%s AND post_fk=%s"
+            cursor.execute(q, (user["user_pk"], post_pk))
+        else:
+            q = "INSERT INTO likes VALUES (%s, %s, %s)"
+            cursor.execute(q, (user["user_pk"], post_pk, like_created_at))
+
         db.commit()
 
+        # Hent opdateret like count
+        q = "SELECT post_total_likes FROM posts WHERE post_pk=%s"
+        cursor.execute(q, (post_pk,))
+        like_count = cursor.fetchone()["post_total_likes"]
 
-        button_unlike_tweet = render_template("___button_unlike_tweet.html", post_pk=post_pk)
-        return f"""
-            <mixhtml mix-update="#like_container_{post_pk}">
-                {button_unlike_tweet}
-            </mixhtml>
+        # Dynamisk opdatering efter brugerhandling
+        icon_class = "fa-solid fa-heart" if not already_liked else "fa-regular fa-heart"
+
+        html = f"""
+        <span id='like_icon_{post_pk}'><i class='{icon_class}'></i></span>
+        <span id='like_count_{post_pk}'>{like_count}</span>
         """
+
+        return f"<mixhtml mix-update='#like_container_{post_pk}'>{html}</mixhtml>"
+
     except Exception as ex:
         ic(ex)
         return "error"
