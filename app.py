@@ -828,19 +828,21 @@ def api_create_post():
         if "db" in locals(): db.close()    
 
 ##############################
-@app.route("/edit-post/<post_pk>", methods=["GET"])
-def edit_post(post_pk):
+@app.route("/edit-post")
+def edit_post():
     try:
         user = session.get("user")
         if not user:
             return "invalid user"
+        
+        post_pk = request.args.get("post_pk")
 
         db, cursor = x.db()
         q = "SELECT * FROM posts WHERE post_pk = %s AND post_user_fk = %s"
         cursor.execute(q, (post_pk, user["user_pk"]))
         post = cursor.fetchone()
 
-        edit_html = render_template("_edit_post.html", post_pk=post["post_pk"], post_message=post["post_message"], post_image_path=post["post_image_path"])
+        edit_html = render_template("_edit_post.html", post_pk=post_pk, post_message=post["post_message"], post_image_path=post["post_image_path"])
         return f"<mixhtml mix-update='#post_{post_pk}'>{edit_html}</mixhtml>"
 
     except Exception as ex:
