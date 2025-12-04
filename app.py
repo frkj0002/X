@@ -201,24 +201,6 @@ def home():
         if not user:
             return redirect(url_for("login"))
 
-<<<<<<< HEAD
-        # hent kommentarer til hver post
-        for tweet in tweets: 
-            q = """SELECT 
-            comments.comment_pk,
-            comments.comment_message,
-            comments.comment_created_at,
-            users.user_username,
-            users.user_avatar_path
-        FROM comments
-        JOIN users ON users.user_pk = comments.comment_user_fk
-        WHERE comments.comment_post_fk = %s
-        AND comments.comment_deleted_at = 0
-        ORDER BY comments.comment_created_at ASC"""
-            cursor.execute(q, (tweet["post_pk"],))
-            tweet["comments"] = cursor.fetchall()
-
-=======
         db, cursor = x.db()
 
         # Hent posts inkl. om brugeren har liket og post_total_likes fra kolonnen i posts
@@ -243,7 +225,6 @@ def home():
         tweets = cursor.fetchall()
 
         # Hent trends
->>>>>>> main
         q = "SELECT * FROM trends ORDER BY RAND() LIMIT 3"
         cursor.execute(q)
         trends = cursor.fetchall()
@@ -772,13 +753,6 @@ def api_create_post():
         if not user: 
             return "invalid user"
 
-<<<<<<< HEAD
-        user_pk = user["user_pk"]        
-        post_pk = uuid.uuid4().hex
-        post_created_at = int(time.time())
-
-=======
->>>>>>> main
         # hent tekst fra formular
         post_text = request.form.get("post", "").strip()
         post = None
@@ -813,13 +787,8 @@ def api_create_post():
         post_deleted_at = 0
 
         db, cursor = x.db()
-<<<<<<< HEAD
-        q = "INSERT INTO posts VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)"
-        cursor.execute(q, (post_pk, user_pk, post, 0, 0, post_image_path, post_created_at, 0, 0))
-=======
         q = "INSERT INTO posts VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
         cursor.execute(q, (post_pk, post_blocked, user["user_pk"] , post, post_total_likes, post_total_comments, post_image_path, post_created_at, post_updated_at, post_deleted_at))
->>>>>>> main
         db.commit()
         
         toast_ok = render_template("___toast_ok.html", message="The world is reading your post !")
