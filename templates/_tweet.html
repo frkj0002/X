@@ -16,11 +16,8 @@
             <i class="fa-solid fa-trash pointer-e-none"></i>
         </a>
 
-        <!-- <a href="#" class="cursor-pointer" onclick="editPost('{{ tweet.post_pk }}', '{{ tweet.post_message }}')">
-            <i class="fa-solid fa-pen"></i> Edit
-        </a> -->
-
-        <a href="{{ url_for('edit_post', post_pk=tweet.post_pk) }}" class="cursor-pointer text-c-black" mix-get mix-update="#post_{{ tweet.post_pk }}">
+        <a href="{{ url_for('edit_post', post_pk=tweet.post_pk) }}" class="cursor-pointer text-c-black" mix-get
+            mix-update="#post_{{ tweet.post_pk }}">
             <i class="fa-solid fa-pen pointer-e-none"></i>
         </a>
         {% endif %}
@@ -34,14 +31,16 @@
         {% endif %}
 
         <div class="post-actions">
-            <span class="action"><i class="fa-regular fa-comment"></i> 12</span>
+            <span class="action comment-toggle" data-target="comment_box_{{ post_pk }}"><i
+                    class="fa-regular fa-comment"></i> {{ tweet.post_total_comments }} </span>
+
             <span class="action"><i class="fa-solid fa-retweet"></i> 5</span>
-            
+
             <div id="like_container_{{ tweet.post_pk }}">
                 <form method="post" class="action cursor-pointer" mix-post="{{ url_for('like_toggle') }}">
                     <input type="hidden" name="post_pk" value="{{ tweet.post_pk }}">
                     <button type="submit" class="action pointer-e-none">
-                        
+
                         <span id="like_icon_{{ tweet.post_pk }}" class="pointer-e-none">
                             {% if tweet.user_liked %}
                             <i class="fa-solid fa-heart"></i>
@@ -60,5 +59,19 @@
             <span class="action"><i class="fa-solid fa-chart-simple"></i> 230</span>
             <span class="action"><i class="fa-solid fa-share"></i></span>
         </div>
+
+        <div id="comments_list_{{ tweet.post_pk }}" class="">
+          
+            {% for comment in tweet.comments %}
+                {% include "_comment.html" %}
+            {% endfor %}
+         
+        </div>
+
     </div>
 </article>
+
+
+    {% include "_add_comment.html" %}
+
+

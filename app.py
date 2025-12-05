@@ -224,6 +224,24 @@ def home():
         cursor.execute(q, (user["user_pk"],))
         tweets = cursor.fetchall()
 
+        # For hver tweet, hent kommentarer
+        for tweet in tweets:
+            q = """
+            SELECT
+                comments.comment_pk,
+                comments.comment_message,
+                comments.comment_created_at,
+                users.user_username,
+                users.user_avatar_path
+            FROM comments
+            JOIN users ON users.user_pk = comments.comment_user_fk
+            WHERE comments.comment_post_fk = %s
+              AND comments.comment_deleted_at = 0
+            ORDER BY comments.comment_created_at ASC
+            """
+            cursor.execute(q, (tweet["post_pk"],))
+            tweet["comments"] = cursor.fetchall()
+
         # Hent trends
         q = "SELECT * FROM trends ORDER BY RAND() LIMIT 3"
         cursor.execute(q)
@@ -1081,11 +1099,60 @@ def delete_post():
         if "db" in locals(): db.close()  
 
 ##############################
+@app.post("/add-comment")
+def add_comment():
+    try:
+        user = session.get("user", "")
+        if not user: 
+            return "invalid user"
+        
+        post_pk = request.form.get("post_pk")
+        comment_text = request.form.get("comment")
+        comment_created_at = int(time.time())
+
+        if not comment_text:
+            toast_error = render_template("___toast_error.html", message="Comment cannot be empty")
+            return f"<mixhtml mix-bottom='#toast'>{toast_error}</mixhtml>", 500
+
+        comment_pk = uuid.uuid4().hex
+        comment_updated_at = 0
+        comment_deleted_at = 0
+
+        db,cursor = x.db()
+        q = "INSERT INTO comments VALUES (%s, %s, %s, %s, %s, %s, %s)"
+        cursor.execute(q, (comment_pk, user["user_pk"], post_pk, comment_text, comment_created_at, comment_updated_at, comment_deleted_at))
+        db.commit()
+
+        comment = {
+            "user_first_name": user["user_first_name"],
+            "user_last_name": user["user_last_name"],
+            "user_username": user["user_username"],
+            "comment_message" : comment_text,
+            "comment_created_at" : comment_created_at
+        }
+
+
+        toast_ok = render_template("___toast_ok.html", message = "The world is reading your comment!")
+
+        return f"""
+        <mixhtml mix-bottom="#toast">{toast_ok}</mixhtml>
+        """
+
+    except Exception as ex: 
+        toast_error = render_template("___toast_error.html", message="Error adding comment")
+        return f"""<mixhtml mix-bottom="#toast">{ toast_error }</mixhtml>""", 500
+
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close() 
+
+##############################
 @app.route("/api-update-profile", methods=["POST"])
 def api_update_profile():
     try:
         user = session.get("user", "")
-        if not user: return "invalid user"
+        if not user: 
+            return "invalid user"
 
         # Validate
         user_email = x.validate_user_email()
