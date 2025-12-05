@@ -61,10 +61,20 @@
         </div>
 
         <div id="comments_list_{{ tweet.post_pk }}">
-            <button mix-get="{{ url_for('comments', post_pk=tweet.post_pk) }}"
-                mix-update="#comments_list_{{ tweet.post_pk }}">
-                Load comments
-            </button>
+            {% if tweet.comments %}
+            {% for comment in tweet.comments %}
+            <div class="comment">
+                <img src="{{ url_for('static', filename='images/user_avatars/' ~ (comment.user_avatar_path or 'unknown.jpg')) }}"
+                    class="w-6 h-6 rounded-full">
+                <div>
+                    <span>@{{ comment.user_username }}</span>
+                    <p>{{ comment.comment_message }}</p>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p></p>
+            {% endif %}
         </div>
     </div>
 </article>

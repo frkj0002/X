@@ -224,6 +224,24 @@ def home():
         cursor.execute(q, (user["user_pk"],))
         tweets = cursor.fetchall()
 
+        # For hver tweet, hent kommentarer
+        for tweet in tweets:
+            q = """
+            SELECT
+                comments.comment_pk,
+                comments.comment_message,
+                comments.comment_created_at,
+                users.user_username,
+                users.user_avatar_path
+            FROM comments
+            JOIN users ON users.user_pk = comments.comment_user_fk
+            WHERE comments.comment_post_fk = %s
+              AND comments.comment_deleted_at = 0
+            ORDER BY comments.comment_created_at ASC
+            """
+            cursor.execute(q, (tweet["post_pk"],))
+            tweet["comments"] = cursor.fetchall()
+
         # Hent trends
         q = "SELECT * FROM trends ORDER BY RAND() LIMIT 3"
         cursor.execute(q)
