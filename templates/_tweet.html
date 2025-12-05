@@ -60,18 +60,6 @@
             <span class="action"><i class="fa-solid fa-share"></i></span>
         </div>
 
-        <div class="post-actions">
-            <form class="action">
-                <input type="hidden" name="post_pk" value="{{ tweet.post_pk }}">
-                <input type="text" name="comment" id="comment_input_{{ tweet.post_pk }}"
-                    placeholder="Write a comment..." class="comment-input">
-                <button type="submit" mix-post="{{ url_for('add_comment') }}"
-                    mix-bottom="#comments_list_{{ tweet.post_pk }}" mix-default="Add Comment" mix-await="Posting...">
-                    Add Comment
-                </button>
-            </form>
-        </div>
-
         <div id="comments_list_{{ tweet.post_pk }}" class="">
             {% if tweet.comments %}
             {% for comment in tweet.comments %}
@@ -88,3 +76,18 @@
         </div>
     </div>
 </article>
+
+
+<div class="post-actions">
+    <form class="action" mix-post="{{ url_for('add_comment') }}">
+        <input type="hidden" name="post_pk" value="{{ tweet.post_pk }}">
+
+        <textarea name="comment" id="comment_input_{{ tweet.post_pk }}" placeholder="Write a comment..."
+            class="comment-input outline-1 pa-2"></textarea>
+
+        <button type="submit" mix-bottom="#comments_list_{{ tweet.post_pk }}" mix-default="Add Comment"
+            mix-await="Posting...">
+            Add Comment
+        </button>
+    </form>
+</div>

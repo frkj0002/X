@@ -991,8 +991,7 @@ def add_comment():
             return "invalid user"
         
         post_pk = request.form.get("post_pk")
-
-        comment_text = request.form.get("comment", "").strip()
+        comment_text = request.form.get("comment")
         comment_created_at = int(time.time())
 
         if not comment_text:
