@@ -983,7 +983,7 @@ def delete_post():
         if "db" in locals(): db.close()  
 
 ##############################
-@app.route("/add-comment", methods=["POST"])
+@app.post("/add-comment")
 def add_comment():
     try:
         user = session.get("user", "")
