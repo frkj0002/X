@@ -30,13 +30,11 @@
             <ul>
                 <li><a href="#"><i class="fa-brands fa-x-twitter"></i></a></li>
 
-
                 <li>
                     <a href="/home-comp" mix-get><i class="fa-solid fa-house"></i>
                         <span class="pointer-e-none">{{ x.lans("home") }}</span>
                     </a>
                 </li>
-
 
                 <li><a href="#"><i class="fa-solid fa-magnifying-glass"></i><span>{{ x.lans("explore") }}</span></a>
                 </li>
@@ -49,7 +47,7 @@
                 <li><a href="#"><i class="fa-solid fa-star"></i><span>{{ x.lans("premium") }}</span></a></li>
 
                 <li>
-                    <a href="/profile" mix-get mix-default="<i class='fa-regular fa-user'></i> Profile"
+                    <a href="/profile" mix-get mix-default=" <i class='fa-regular fa-user'></i> Profile"
                         mix-await="Loading ...">
                         <i class="fa-regular fa-user"></i>
                         <span class="pointer-e-none">{{ x.lans("profile") }}</span>
@@ -60,8 +58,6 @@
                 <li><a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i><span>{{
                             x.lans("logout") }}</span></a></li>
             </ul>
-
-            <button class="post-btn">Post</button>
 
             <div id="profile_tag">
                 <img class="picture"
@@ -86,7 +82,6 @@
 
         <aside>
             <form id="search_form" class="p-relative">
-                <!-- <input mix-post="/api-search" mix-input mix-delay="300" name="search_for" type="text" placeholder="Search Twitter"> -->
                 <input id="txt_search_for" name="search_for" type="text" placeholder="{{ x.lans('search') }} Twitter"
                     oninput="get_search_results('/api-search', 'post', '#search_form', 'parse_search_results')">
                 <button class="cursor-pointer">{{ x.lans("search") }}</button>
@@ -106,7 +101,6 @@
                     {% endfor %}
                     <button class="text-c-tealblue text-90">{{ x.lans("more_news") }}</button>
                 </div>
-
             </div>
 
             <div class="mt-2 border-c-gray:+50 border-1 rounded-md pa-2">
@@ -119,6 +113,7 @@
 
                     <button class="text-c-tealblue text-90">{{ x.lans("show_more") }}</button>
                 </div>
+            </div>
         </aside>
     </div>
 

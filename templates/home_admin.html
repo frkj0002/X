@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='mixhtml.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+    <script src="https://unpkg.com/mojocss"></script>
+
+    <title>
+        Admin page
+    </title>
+</head>
+
+<body m-load style="display:none">
+
+    <div id="toast"></div>
+
+    <div id="container">
+        <button class="burger" aria-label="Menu">
+            <i class="fa-solid fa-bars"></i>
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <nav>
+            <ul>
+                <li><a href="#"><i class="fa-brands fa-x-twitter"></i></a></li>
+                <li><a href="#" mix-get><i class="fa-solid fa-house"></i><span
+                            class="pointer-e-none">Admin-page</span></a></li>
+
+                <li>
+                    <a href="/users" mix-get mix-default="<i class='fa-solid fa-users'></i> Users"
+                        mix-await="Loading ...">
+                        <i class="fa-solid fa-users"></i>
+                        <span class="pointer-e-none">Users</span>
+                    </a>
+                </li>
+
+
+                <li>
+                    <a href="/posts" mix-get mix-default="<i class='fa-solid fa-file-lines'></i> Posts"
+                        mix-await="Loading ...">
+                        <i class="fa-solid fa-file-lines"></i>
+                        <span class="pointer-e-none">Posts</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="/languages" mix-get mix-default="<i class='fa-solid fa-language'></i> Languages"
+                        mix-await="Loading ...">
+                        <i class="fa-solid fa-language"></i>
+                        <span class="pointer-e-none">Languages</span>
+                    </a>
+                </li>
+
+                <li><a href="#"><i class="fa-solid fa-ellipsis"></i><span>{{ x.lans("more") }}</span></a></li>
+                
+                <li><a href="{{ url_for('logout') }}"><iclass="fa-solid fa-right-from-bracket"></iclass=><span>{{x.lans("logout") }}</span></a></li>
+
+            </ul>
+
+            <div id="profile_tag">
+                <img class="picture"
+                    src="{{ url_for('static', filename='images/user_avatars/' ~ (user.user_avatar_path if user.user_avatar_path else 'unknown.jpg')) }}"
+                    alt="Profile picture">
+                <div>
+                    <div class="name">
+                        {{ user.user_first_name }}
+                    </div>
+                    <div class="handle">
+                        @{{ user.user_username }}
+                    </div>
+                </div>
+                <i class="fa-solid fa-ellipsis option"></i>
+            </div>
+        </nav>
+
+
+        <main class="px-4">
+            <h1>Admin Dashboard</h1>
+
+            <ul>
+                <li>Total Users: {{ total_users }}</li>
+                <li>Total Posts: {{ total_posts }}</li>
+                <li>Blocked Users: {{ blocked_users }}</li>
+                <li>Blocked Posts: {{ blocked_posts }}</li>
+            </ul>
+
+        </main>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='mixhtml.js') }}"></script>
+
+    <script>
+        mojo()
+    </script>
+
+</body>
+
+</html>
