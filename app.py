@@ -982,39 +982,14 @@ def delete_post():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()  
 
-############################
-@app.get("/comments")
-def comments():
-    try:
-        post_pk = request.args.get("post_pk")
-        db, cursor = x.db()
-
-        q = """
-        SELECT comment_pk, comment_user_fk, comment_message, comment_created_at
-        FROM comments
-        WHERE comment_post_fk = %s
-        ORDER BY comment_created_at DESC
-        """
-        cursor.execute(q, (post_pk,))
-        comments = cursor.fetchall()
-
-        return render_template("_comment.html", comments=comments)
-
-    except Exception as ex:
-        ic(ex)
-        return "Error loading comments", 500
-
-    finally:
-        if "cursor" in locals(): cursor.close()
-        if "db" in locals(): db.close()
-
-
 ##############################
 @app.route("/add-comment", methods=["POST"])
 def add_comment():
     try:
         user = session.get("user", "")
-        user_pk = user["user_pk"]
+        if not user: 
+            return "invalid user"
+        
         post_pk = request.form.get("post_pk")
 
         comment_text = request.form.get("comment", "").strip()
@@ -1025,10 +1000,12 @@ def add_comment():
             return f"<mixhtml mix-bottom='#toast'>{toast_error}</mixhtml>", 500
 
         comment_pk = uuid.uuid4().hex
+        comment_updated_at = 0
+        comment_deleted_at = 0
 
         db,cursor = x.db()
         q = "INSERT INTO comments VALUES (%s, %s, %s, %s, %s, %s, %s)"
-        cursor.execute(q, (comment_pk, user_pk, post_pk, comment_text, comment_created_at, 0, 0))
+        cursor.execute(q, (comment_pk, user["user_pk"], post_pk, comment_text, comment_created_at, comment_updated_at, comment_deleted_at))
         db.commit()
 
         toast_ok = render_template("___toast_ok.html", message="The world is reading your comment !")
@@ -1041,11 +1018,11 @@ def add_comment():
         }
 
         html_comment = render_template("_comment.html", comment=comment)
-        return f"""<mixhtml mix-append="#comments_list_{post_pk}">{html_comment}</mixhtml>"""
+        return f"""
+        <mixhtml mix-append="#comments_list_{post_pk}">{html_comment}</mixhtml>
+        <mixhtml mix-bottom="#toast">{toast_ok}</mixhtml>"""
 
-    except Exception as ex:
-        ic(ex)
-        if "db" in locals(): db.rollback()   
+    except Exception as ex: 
         toast_error = render_template("___toast_error.html", message="Error adding comment")
         return f"""<mixhtml mix-bottom="#toast">{ toast_error }</mixhtml>""", 500
 
@@ -1058,7 +1035,8 @@ def add_comment():
 def api_update_profile():
     try:
         user = session.get("user", "")
-        if not user: return "invalid user"
+        if not user: 
+            return "invalid user"
 
         # Validate
         user_email = x.validate_user_email()
