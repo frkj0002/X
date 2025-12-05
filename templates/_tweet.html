@@ -63,17 +63,15 @@
         <div id="comments_list_{{ tweet.post_pk }}">
             {% if tweet.comments %}
             {% for comment in tweet.comments %}
-            <div class="comment">
+            <div class="comment d-flex">
                 <img src="{{ url_for('static', filename='images/user_avatars/' ~ (comment.user_avatar_path or 'unknown.jpg')) }}"
                     class="w-6 h-6 rounded-full">
-                <div>
+                <div class="">
                     <span>@{{ comment.user_username }}</span>
                     <p>{{ comment.comment_message }}</p>
                 </div>
             </div>
             {% endfor %}
-            {% else %}
-            <p></p>
             {% endif %}
         </div>
     </div>
