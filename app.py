@@ -964,6 +964,32 @@ def delete_post():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()  
 
+############################
+@app.get("/comments")
+def comments():
+    try:
+        post_pk = request.args.get("post_pk")
+        db, cursor = x.db()
+
+        q = """
+        SELECT comment_pk, comment_user_fk, comment_message, comment_created_at
+        FROM comments
+        WHERE comment_post_fk = %s
+        ORDER BY comment_created_at DESC
+        """
+        cursor.execute(q, (post_pk,))
+        comments = cursor.fetchall()
+
+        return render_template("_comment.html", comments=comments)
+
+    except Exception as ex:
+        ic(ex)
+        return "Error loading comments", 500
+
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+
 
 ##############################
 @app.route("/add-comment", methods=["POST"])
