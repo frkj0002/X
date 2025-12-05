@@ -1007,7 +1007,6 @@ def add_comment():
         cursor.execute(q, (comment_pk, user["user_pk"], post_pk, comment_text, comment_created_at, comment_updated_at, comment_deleted_at))
         db.commit()
 
-        toast_ok = render_template("___toast_ok.html", message="The world is reading your comment !")
         comment = {
             "user_first_name": user["user_first_name"],
             "user_last_name": user["user_last_name"],
@@ -1016,10 +1015,12 @@ def add_comment():
             "comment_created_at" : comment_created_at
         }
 
-        html_comment = render_template("_comment.html", comment=comment)
+
+        toast_ok = render_template("___toast_ok.html", message = "The world is reading your comment!")
+
         return f"""
-        <mixhtml mix-append="#comments_list_{post_pk}">{html_comment}</mixhtml>
-        <mixhtml mix-bottom="#toast">{toast_ok}</mixhtml>"""
+        <mixhtml mix-bottom="#toast">{toast_ok}</mixhtml>
+        """
 
     except Exception as ex: 
         toast_error = render_template("___toast_error.html", message="Error adding comment")

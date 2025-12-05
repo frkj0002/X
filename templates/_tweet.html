@@ -61,33 +61,17 @@
         </div>
 
         <div id="comments_list_{{ tweet.post_pk }}" class="">
-            {% if tweet.comments %}
+          
             {% for comment in tweet.comments %}
-            <div class="d-flex pt-5">
-                <img src="{{ url_for('static', filename='images/user_avatars/' ~ (comment.user_avatar_path or 'unknown.jpg')) }}"
-                    class="me-2 w-6 h-6 rounded-full">
-                <div class="">
-                    <span>@{{ comment.user_username }}</span>
-                    <p>{{ comment.comment_message }}</p>
-                </div>
-            </div>
+                {% include "_comment.html" %}
             {% endfor %}
-            {% endif %}
+         
         </div>
+
     </div>
 </article>
 
 
-<div class="post-actions pb-2" style="border-bottom: 2px solid rgb(230, 230, 230);">
-    <form class="action" mix-post="{{ url_for('add_comment') }}">
-        <input type="hidden" name="post_pk" value="{{ tweet.post_pk }}">
+    {% include "_add_comment.html" %}
 
-        <textarea name="comment" id="comment_input_{{ tweet.post_pk }}" placeholder="Write a comment..."
-            class="comment-input outline-1 pa-2 w-full rounded border-c-gray resize-none"></textarea>
 
-        <button type="submit" mix-bottom="#comments_list_{{ tweet.post_pk }}" mix-default="Add Comment"
-            mix-await="Posting..." class="w-auto ml-auto mt-2 bg-c-black text-c-white py-2 px-12 rounded-xl">
-            Add Comment
-        </button>
-    </form>
-</div>
