@@ -1,5 +1,13 @@
-{% if is_following %}
-<span class="px-4 py-1 text-c-white bg-c-black rounded-lg">{{ x.lans("follow") }}</span>
-{% else %}
-<span class="px-4 py-1 text-c-black bg-c-white border-1 border-c-black rounded-lg">Unfollow</span>
-{% endif %}
+<div id="follow_container_{{ target_user.user_pk }}">
+    <form method="post" class="action" mix-post="{{ url_for('follow_toggle') }}">
+        <input type="hidden" name="user_to_follow" value="{{ target_user.user_pk }}">
+        <button type="submit"
+            class="px-4 py-1 rounded-lg cursor-pointer {% if target_user.user_followed %} text-c-black bg-c-white border-1 border-c-black {% else %} text-c-white bg-c-black {% endif %}">
+            {% if target_user.user_followed %}
+            Unfollow
+            {% else %}
+            Follow
+            {% endif %}
+        </button>
+    </form>
+</div>

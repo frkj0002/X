@@ -230,8 +230,21 @@ def home():
         trends = cursor.fetchall()
 
         # Hent forslag til brugere
-        q = "SELECT * FROM users WHERE user_pk != %s ORDER BY RAND() LIMIT 3"
-        cursor.execute(q, (user["user_pk"],))
+        q = """
+            SELECT users.*
+            FROM users
+            WHERE users.user_pk != %s AND users.user_role != 'admin'
+                AND NOT EXISTS (
+                SELECT 1 FROM followers
+                WHERE followers.user_fk = %s
+                    AND followers.follow_user_fk = users.user_pk
+                )
+            ORDER BY RAND()
+            LIMIT 3
+        """
+
+        # q = "SELECT * FROM users WHERE user_pk != %s ORDER BY RAND() LIMIT 3"
+        cursor.execute(q, (user["user_pk"], user["user_pk"]))
         suggestions = cursor.fetchall()
 
         return render_template(
@@ -508,14 +521,22 @@ def users():
         return "error"
     finally:
         if "cursor" in locals(): cursor.close()
-        if "db" in locals(): db.close()##############################
+        if "db" in locals(): db.close()
+
+##############################
 @app.get("/following")
 def following():
     try:
         user = session.get("user", "")
         db, cursor = x.db()
-        # followers.user_fk is used to specify that the user_fk column is placed in the followers table. This is only necessary because, we also have a user_fk column in the likes table
-        q = "SELECT * FROM users JOIN followers ON user_pk = follow_user_fk WHERE followers.user_fk = %s"
+        q = """
+            SELECT 
+                users.*,
+                1 AS user_followed
+            FROM users
+            JOIN followers ON user_pk = follow_user_fk
+            WHERE followers.user_fk = %s
+        """
         cursor.execute(q, (user["user_pk"],))
         followings = cursor.fetchall()
         following_html = render_template("_following.html", x=x, followings=followings)
@@ -533,8 +554,20 @@ def followers():
     try:
         user = session.get("user", "")
         db, cursor = x.db()
-        q = "SELECT * FROM users JOIN followers ON user_pk = followers.user_fk WHERE follow_user_fk = %s"
-        cursor.execute(q, (user["user_pk"],))
+        q = """
+            SELECT
+                users.*,
+                EXISTS(
+                    SELECT 1 
+                    FROM followers
+                    WHERE followers.user_fk = %s
+                    AND followers.follow_user_fk = users.user_pk
+                ) AS user_followed
+            FROM users
+            JOIN followers ON users.user_pk = followers.user_fk
+            WHERE followers.follow_user_fk = %s
+        """
+        cursor.execute(q, (user["user_pk"], user["user_pk"]))
         followers = cursor.fetchall()
         followers_html = render_template("_followers.html", x=x, followers=followers)
         return f"""<browser mix-update="#main">{followers_html}</browser>"""
@@ -546,35 +579,45 @@ def followers():
         if "db" in locals(): db.close()
 
 ##############################
-@app.patch("/follow-user")
-def api_follow_user():
+@app.post("/follow-toggle")
+def follow_toggle():
     try:
         user = session.get("user", "")
-        user_to_follow = request.json.get("user_pk")
+        user_to_follow = request.form.get("user_to_follow")
         follow_created_at = int(time.time())
         db, cursor = x.db()
-        q = "SELECT * FROM followers WHERE user_fk = %s AND follow_user_fk = %s"
+        q = "SELECT 1 FROM followers WHERE user_fk = %s AND follow_user_fk = %s"
         cursor.execute(q, (user["user_pk"], user_to_follow))
-        existing = cursor.fetchone()
+        already_following = cursor.fetchone()
 
-        if existing:
+        if already_following:
             q = "DELETE FROM followers WHERE user_fk = %s AND follow_user_fk = %s"
             cursor.execute(q, (user["user_pk"], user_to_follow))
-            db.commit()
-            status = False
         else:
             q = "INSERT into followers VALUES (%s, %s, %s)"
             cursor.execute(q, (user["user_pk"], user_to_follow, follow_created_at))
-            db.commit()
-            status = True
+        db.commit()
+
+        q = """
+            SELECT user_pk,
+            EXISTS(
+                SELECT 1 FROM followers
+                WHERE user_fk = %s
+                AND follow_user_fk = %s    
+            ) AS user_followed
+            FROM users
+            WHERE user_pk = %s
+        """
+        cursor.execute(q, (user["user_pk"], user_to_follow, user_to_follow))
+        target_user = cursor. fetchone()
         
-        button_follow_user = render_template("___button_follow_user.html", user_pk=user_to_follow, is_following=status, x=x)
+        button_follow_user = render_template("___button_follow_user.html", target_user=target_user)
         return f"""
-            <mixhtml mix-update="#follow_btn_{user_to_follow}">
+            <mixhtml mix-update="#follow_container_{user_to_follow}">
                 {button_follow_user}
             </mixhtml>
         """
-        
+    
     except Exception as ex:
         ic(ex)
         return "error"
@@ -582,9 +625,6 @@ def api_follow_user():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
 
-# button_follow_user = render_template("___button_follow_user.html", user_pk=user_to_follow, is_following=status)
-        # return f"""<mixhtml mix-update="follow_container_{user_pk}">{button_follow_user}</mixhtml>
-        # """
 
 ##############################
 @app.post("/block_user")

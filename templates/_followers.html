@@ -12,7 +12,8 @@
             </p>
 
         </div>
-        <button class="px-4 py-1 text-c-white bg-c-black rounded-lg">{{ x.lans("follow") }}</button>
+        {% set target_user = follow %}
+        {% include "___button_follow_user.html" %}
     </div>
 </div>
 {% endfor %}
