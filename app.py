@@ -116,8 +116,6 @@ def login(lan = "english"):
             if "db" in locals(): db.close()
 
 
-
-
 ##############################
 @app.route("/signup", methods=["GET", "POST"])
 @app.route("/signup/<lan>", methods=["GET", "POST"])
@@ -189,7 +187,6 @@ def signup(lan = "english"):
         finally:
             if "cursor" in locals(): cursor.close()
             if "db" in locals(): db.close()
-
 
 
 ##############################
@@ -280,6 +277,7 @@ def home():
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
+
 
 ##############################
 @app.get("/home-admin")
@@ -397,6 +395,7 @@ def view_forgot_form():
             if "cursor" in locals(): cursor.close()
             if "db" in locals(): db.close()
      
+
 ##############################
 @app.route("/reset-password", methods=["GET", "POST"])
 def reset_password():
@@ -462,7 +461,6 @@ def reset_password():
             if "db" in locals(): db.close()
         
 
-
 ##############################
 @app.get("/logout")
 def logout():
@@ -474,7 +472,6 @@ def logout():
         return "error"
     finally:
         pass
-
 
 
 ##############################
@@ -517,6 +514,7 @@ def profile():
     finally:
         pass
 
+
 ##############################
 @app.get("/users")
 def users():
@@ -540,6 +538,7 @@ def users():
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
+
 
 ##############################
 @app.get("/following")
@@ -565,6 +564,7 @@ def following():
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
+
 
 ##############################
 @app.get("/followers")
@@ -595,6 +595,7 @@ def followers():
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
+
 
 ##############################
 @app.post("/follow-toggle")
@@ -685,6 +686,7 @@ def block_user():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
 
+
 ##############################
 @app.post("/unblock_user")
 def unblock_user():
@@ -725,6 +727,7 @@ def unblock_user():
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
+
 
 ##############################
 @app.post("/like-toggle")
@@ -772,6 +775,7 @@ def like_toggle():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
 
+
 ##############################
 @app.get("/posts")
 def posts():
@@ -795,6 +799,7 @@ def posts():
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
+
 
 ##############################
 @app.post("/block-post")
@@ -836,6 +841,7 @@ def block_post():
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()  
+
 
 ##############################
 @app.post("/unblock-post")
@@ -961,6 +967,7 @@ def api_create_post():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()    
 
+
 ##############################
 @app.route("/edit-post")
 def edit_post():
@@ -1068,6 +1075,7 @@ def api_update_post():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
 
+
 ##############################
 @app.route("/delete-post", methods=["DELETE"])
 def delete_post():
@@ -1097,6 +1105,7 @@ def delete_post():
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()  
+
 
 ##############################
 @app.post("/add-comment")
@@ -1145,6 +1154,7 @@ def add_comment():
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close() 
+
 
 ##############################
 @app.route("/api-update-profile", methods=["POST"])
@@ -1218,6 +1228,7 @@ def api_update_profile():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
 
+
 ##############################
 @app.route("/delete-profile", methods=["DELETE"])
 def delete_profile():
@@ -1250,6 +1261,7 @@ def delete_profile():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
 
+
 ##############################
 @app.post("/api-search")
 def api_search():
@@ -1270,7 +1282,6 @@ def api_search():
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
-
 
 
 ##############################
@@ -1323,6 +1334,8 @@ def get_data_from_sheet():
     finally:
         pass
 
+
+##############################
 @app.route("/languages", methods=["GET", "POST"])
 def languages():
     try:
