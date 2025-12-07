@@ -1152,6 +1152,8 @@ def api_update_post():
 @app.route("/delete-post", methods=["DELETE"])
 def delete_post():
     try: 
+        lan = session.get("lan", "english")
+
         user = session.get("user")
         if not user:
             return "invalid user"
@@ -1171,7 +1173,9 @@ def delete_post():
     
     except Exception as ex:
         ic(ex)
-        return "Could not delete post", 500
+        
+        toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+        return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 500
 
     finally:
         if "cursor" in locals(): cursor.close()
@@ -1182,6 +1186,8 @@ def delete_post():
 @app.post("/add-comment")
 def add_comment():
     try:
+        lan = session.get("lan", "english")
+
         user = session.get("user", "")
         if not user: 
             return "invalid user"
@@ -1191,8 +1197,8 @@ def add_comment():
         comment_created_at = int(time.time())
 
         if not comment_text:
-            toast_error = render_template("___toast_error.html", message="Comment cannot be empty")
-            return f"<mixhtml mix-bottom='#toast'>{toast_error}</mixhtml>", 500
+            toast_error = render_template("___toast_error.html", message=dictionary["comment_empty"][lan])
+            return f"<mixhtml mix-bottom='#toast'>{toast_error}</mixhtml>", 400
 
         comment_pk = uuid.uuid4().hex
         comment_updated_at = 0
@@ -1211,15 +1217,12 @@ def add_comment():
             "comment_created_at" : comment_created_at
         }
 
-
-        toast_ok = render_template("___toast_ok.html", message = "The world is reading your comment!")
-
-        return f"""
-        <mixhtml mix-bottom="#toast">{toast_ok}</mixhtml>
-        """
+        toast_ok = render_template("___toast_ok.html", message=dictionary["comment_posted"][lan])
+        return f"<browser mix-bottom='#toast'>{toast_ok}</browser>"
 
     except Exception as ex: 
-        toast_error = render_template("___toast_error.html", message="Error adding comment")
+        ic(ex)
+        toast_error = render_template("___toast_error.html", message=dictionary["comment_error"][lan])
         return f"""<mixhtml mix-bottom="#toast">{ toast_error }</mixhtml>""", 500
 
     finally:
@@ -1231,6 +1234,8 @@ def add_comment():
 @app.route("/api-update-profile", methods=["POST"])
 def api_update_profile():
     try:
+        lan = session.get("lan", "english")
+
         user = session.get("user", "")
         if not user: 
             return "invalid user"
@@ -1268,7 +1273,7 @@ def api_update_profile():
         db.commit()
 
         # Response to the browser
-        toast_ok = render_template("___toast_ok.html", message="Profile updated successfully")
+        toast_ok = render_template("___toast_ok.html", message=dictionary["profile_updated"][lan])
         return f"""
             <browser mix-bottom="#toast">{toast_ok}</browser>
             <browser mix-update="#profile_tag .name">{user_first_name}</browser>
@@ -1284,13 +1289,17 @@ def api_update_profile():
             toast_error = render_template("___toast_error.html", message=ex.args[0])
             return f"""<mixhtml mix-update="#toast">{ toast_error }</mixhtml>""", 400
         
-        # Database errors
-        if "Duplicate entry" and user_email in str(ex): 
-            toast_error = render_template("___toast_error.html", message="Email already registered")
-            return f"""<mixhtml mix-update="#toast">{ toast_error }</mixhtml>""", 400
-        if "Duplicate entry" and user_username in str(ex): 
-            toast_error = render_template("___toast_error.html", message="Username already registered")
-            return f"""<mixhtml mix-update="#toast">{ toast_error }</mixhtml>""", 400
+        # Duplicate entry / database errors
+        elif "Duplicate entry" in str(ex):
+            if user_email in str(ex): 
+                message = dictionary["email_already_registered"][lan]
+            elif user_username in str(ex):
+                message = dictionary["username_already_registered"][lan]
+            else:
+                message = dictionary["system_error"][lan]
+        
+            toast_error = render_template("___toast_error.html", message=message)
+            return f"""<browser mix-update="#toast">{toast_error}</browser>""", 400
         
         # System or developer error
         toast_error = render_template("___toast_error.html", message="System under maintenance")
@@ -1305,7 +1314,12 @@ def api_update_profile():
 @app.route("/delete-profile", methods=["DELETE"])
 def delete_profile():
     try:
+        lan = session.get("lan", "english")
+
         user = session.get("user", "")
+        if not user:
+            return redirect(url_for("login"))
+
         db, cursor = x.db()
         q = """SELECT user_pk, user_created_at, 
         user_total_followers AS archived_followers_count, 
@@ -1326,12 +1340,16 @@ def delete_profile():
         db.commit()
 
         return f"""<browser mix-redirect="/signup"></browser>"""
-        # return redirect(url_for('signup'))
 
     except Exception as ex:
         ic(ex)
-        return "Error: deleting profile", 500
-    
+        
+        if "db" in locals():
+            db.rollback()
+
+        toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+        return f"""<browser mix-update="#toast">{toast_error}</browser>""", 500
+        
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -1341,15 +1359,18 @@ def delete_profile():
 @app.post("/api-search")
 def api_search():
     try:
-        # TODO: The input search_for must be validated
         search_for = request.form.get("search_for", "")
-        if not search_for: return """empty search field""", 400
+
+        if not search_for: 
+            return """empty search field""", 400
+        
         part_of_query = f"%{search_for}%"
-        ic(search_for)
+
         db, cursor = x.db()
         q = "SELECT * FROM users WHERE user_username LIKE %s"
         cursor.execute(q, (part_of_query,))
         users = cursor.fetchall()
+
         return jsonify(users)
     
     except Exception as ex:

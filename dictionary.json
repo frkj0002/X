@@ -199,10 +199,10 @@
         "danish": "Skift profilbillede",
         "spanish": "Cambiar imagen de avatar"
     },
-    "update_profile": {
-        "english": "Update profile",
-        "danish": "Opdater profil",
-        "spanish": "Actualizar perfil"
+    "comment_empty": {
+        "english": "Comment cannot be empty",
+        "danish": "Kommentaren må ikke være tom",
+        "spanish": "El comentario no puede estar vacío"
     },
     "follow": {
         "english": "Follow",
@@ -253,5 +253,20 @@
         "english": "Passwords do not match",
         "danish": "Adgangskoderne matcher ikke",
         "spanish": "Las contraseñas no coinciden"
+    },
+    "profile_updated": {
+        "english": "Profile updated successfully",
+        "danish": "Profil opdateret",
+        "spanish": "Perfil actualizado"
+    },
+    "comment_posted": {
+        "english": "Your comment has been posted",
+        "danish": "Din kommentar er blevet sendt",
+        "spanish": "Tu comentario ha sido publicado"
+    },
+    "comment_error": {
+        "english": "Error adding comment",
+        "danish": "Fejl ved tilføjelse af kommentar",
+        "spanish": "Error al agregar el comentario"
     }
 }
