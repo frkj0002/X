@@ -17,6 +17,7 @@
             <td>
                 {{ "Blocked" if post.post_blocked == "1" else "Active" }}
             </td>
+
             <td>
 
                 {% if post.post_blocked == "1" %}
@@ -34,7 +35,6 @@
                 </form>
 
                 {% endif %}
-
             </td>
         </tr>
         {% endfor %}

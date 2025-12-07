@@ -13,6 +13,7 @@
         <a href="/followers" mix-get>{{ user.user_total_followers }} Followers</a>
     </div>
 </div>
+
 <form class="x-dialog__form" action="{{ url_for('api_update_profile') }}" mix-post autocomplete="off"
     enctype="multipart/form-data">
     <div>
@@ -48,5 +49,4 @@
 </form>
 
 <button class="px-4 py-1 text-c-white bg-c-red rounded-lg cursor-pointer"
-    mix-delete="{{ url_for('delete_profile') }}"><i class="fa-solid fa-trash"></i> Delete
-    account</button>
+    mix-delete="{{ url_for('delete_profile') }}"><i class="fa-solid fa-trash"></i> Delete account</button>
