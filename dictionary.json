@@ -303,5 +303,10 @@
         "english": "Search field cannot be empty",
         "danish": "Søgefeltet kan ikke være tomt",
         "spanish": "El campo de búsqueda no puede estar vacío"
+    },
+    "post_deleted": {
+        "english": "Your post has been deleted",
+        "danish": "Din post er blevet slettet",
+        "spanish": "Tu publicación ha sido eliminada"
     }
 }

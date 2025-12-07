@@ -1268,7 +1268,11 @@ def delete_post():
         cursor.execute(q, (post_deleted_at, post_pk, user["user_pk"]))
         db.commit()
 
-        return f'<mixhtml mix-remove="#post_{post_pk}"></mixhtml>'
+        toast_ok = render_template("___toast_ok.html", message=dictionary["post_deleted"][lan])
+        return f"""
+            <mixhtml mix-remove="#post_{post_pk}"></mixhtml>
+            <mixhtml mix-bottom="#toast">{toast_ok}</mixhtml>
+        """
     
     except Exception as ex:
         ic(ex)
