@@ -223,5 +223,15 @@
         "english": "Verify your account",
         "danish": "Bekræft din konto",
         "spanish": "Verifica tu cuenta"
+    },
+    "email_send_error": {
+        "english": "Cannot send verification email. Please try again later.",
+        "danish": "Kan ikke sende bekræftelsesmail. Prøv igen senere.",
+        "spanish": "No se puede enviar el correo de verificación. Inténtalo de nuevo más tarde."
+    },
+    "email_sent": {
+        "english": "Email sent successfully!",
+        "danish": "Email sendt!",
+        "spanish": "¡Correo enviado!"
     }
 }

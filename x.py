@@ -2,14 +2,14 @@ from flask import request, make_response, render_template
 import mysql.connector
 import re 
 import dictionary
-
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from functools import wraps
 
 import json
-
+with open("dictionary.json", "r", encoding="utf-8") as f:
+    dictionary = json.load(f)
 
 from icecream import ic
 ic.configureOutput(prefix=f'----- | ', includeContext=True)
@@ -134,7 +134,7 @@ def validate_post(post = ""):
 
 
 ##############################
-def send_email(to_email, subject, template):
+def send_email(to_email, subject, template, lan="english"):
     try:
         # Create a gmail fullflaskdemomail
         # Enable (turn on) 2 step verification/factor in the google account manager
@@ -150,7 +150,7 @@ def send_email(to_email, subject, template):
         
         # Create the email message
         message = MIMEMultipart()
-        message["From"] = "X"
+        message["From"] = "X <{}>".format(sender_email)
         message["To"] = to_email
         message["Subject"] = subject
 
@@ -162,12 +162,14 @@ def send_email(to_email, subject, template):
             server.starttls()  # Upgrade the connection to secure
             server.login(sender_email, password)
             server.sendmail(sender_email, receiver_email, message.as_string())
-        ic("Email sent successfully!")
 
-        return "email sent"
+        ic("Email sent successfully!")
+        return dictionary["email_sent"][lan]
        
     except Exception as ex:
         ic(ex)
-        raise Exception("cannot send email", 500)
+
+        raise Exception(dictionary["email_send_error"][lan], 500)
+    
     finally:
         pass
