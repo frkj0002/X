@@ -208,5 +208,20 @@
         "english": "Follow",
         "danish": "Følg",
         "spanish": "Vigilar"
+    },
+    "system_error": {
+        "english": "System under maintenance",
+        "danish": "Systemet er under vedligeholdelse",
+        "spanish": "Sistema en mantenimiento"
+    },
+    "username_already_registered": {
+        "english": "Username already registered",
+        "danish": "Brugernavn allerede registreret",
+        "spanish": "Nombre de usuario ya registrado"
+    },
+    "verify_account_subject": {
+        "english": "Verify your account",
+        "danish": "Bekræft din konto",
+        "spanish": "Verifica tu cuenta"
     }
 }

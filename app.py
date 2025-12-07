@@ -10,9 +10,13 @@ import time
 import uuid
 import os
 import x 
-import dictionary
 import io
 import csv
+
+import json
+
+with open("dictionary.json", "r", encoding="utf-8") as f:
+    dictionary = json.load(f)
 
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -64,11 +68,17 @@ def global_variables():
 @x.no_cache
 def login(lan = "english"):
 
-    if lan not in x.allowed_languages: lan = "english"
+    if lan not in x.allowed_languages: 
+        lan = "english"
     x.default_language = lan
 
     if request.method == "GET":
-        if session.get("user", ""): return redirect(url_for("home"))
+        user = session.get("user", "")
+        if user:
+            if user.get("user_role") == "admin": 
+                return redirect(url_for("home_admin"))
+            else:
+                return redirect(url_for("home"))
         return render_template("login.html", lan=lan)
 
     if request.method == "POST":
@@ -76,20 +86,21 @@ def login(lan = "english"):
             # Validate           
             user_email = x.validate_user_email(lan)
             user_password = x.validate_user_password(lan)
+
             # Connect to the database
             q = "SELECT * FROM users WHERE user_email = %s"
             db, cursor = x.db()
             cursor.execute(q, (user_email,))
             user = cursor.fetchone()
+
             if not user: 
-                toast_error = render_template("___toast_error.html", message="user not found")
-                return f"<mixhtml mix-bottom='#toast'>{toast_error}</mixhtml>"
+                raise Exception(dictionary["user_not_found"][lan], 400)
 
             if not check_password_hash(user["user_password"], user_password):
-                raise Exception(dictionary.invalid_credentials[lan], 400)
+                raise Exception(dictionary["invalid_credentials"][lan], 400)
 
             if user["user_verification_key"] != "":
-                raise Exception(dictionary.user_not_verified[lan], 400)
+                raise Exception(dictionary["user_not_verified"][lan], 400)
 
             user.pop("user_password")
             session["user"] = user
@@ -103,12 +114,13 @@ def login(lan = "english"):
             ic(ex)
 
             # User errors
-            if ex.args[1] == 400:
+            if len(ex.args) > 1 and ex.args[1] == 400:
                 toast_error = render_template("___toast_error.html", message=ex.args[0])
-                return f"""<browser mix-update="#toast">{ toast_error }</browser>""", 400
+                return f"""<browser mix-update="#toast">{toast_error}</browser>""", 400
 
             # System or developer error
-            toast_error = render_template("___toast_error.html", message="System under maintenance")
+            message = dictionary["system_error"][lan]
+            toast_error = render_template("___toast_error.html", message=message)
             return f"""<browser mix-bottom="#toast">{ toast_error }</browser>""", 500
 
         finally:
@@ -125,6 +137,12 @@ def signup(lan = "english"):
     x.default_language = lan
 
     if request.method == "GET":
+        user = session.get("user", "")
+        if user:
+            if user.get("user_role") == "admin": 
+                return redirect(url_for("home_admin"))
+            else:
+                return redirect(url_for("home"))
         return render_template("signup.html", lan=lan)
 
     if request.method == "POST":
@@ -135,6 +153,7 @@ def signup(lan = "english"):
             user_username = x.validate_user_username()
             user_first_name = x.validate_user_first_name()
 
+            # User defaults
             user_pk = uuid.uuid4().hex
             user_role = "user"
             user_blocked = 0
@@ -149,7 +168,6 @@ def signup(lan = "english"):
             user_created_at = int(time.time())
             user_updated_at = 0
 
-
             # Connect to the database
             q = "INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
             db, cursor = x.db()
@@ -157,32 +175,38 @@ def signup(lan = "english"):
             user_first_name, user_last_name, user_avatar_path, user_verification_key, user_verified_at, user_total_followers, user_total_following, user_created_at, user_updated_at))
             db.commit()
 
-            # send verification email
+            # Send verification email
             email_verify_account = render_template("_email_verify_account.html", user_verification_key=user_verification_key)
-            ic(email_verify_account)
-            x.send_email(user_email, "Verify your account", email_verify_account)
+            x.send_email(user_email, dictionary["verify_account_subject"][lan], email_verify_account)
 
             verification_modal = render_template("_verification_modal.html")
             return f"""<mixhtml mix-update="#modal">{verification_modal}</mixhtml>""", 200
 
         except Exception as ex:
             ic(ex)
-            # User errors
-            if ex.args[1] == 400:
+
+            # User errors (custom validation errrors)
+            if len(ex.args) > 1 and ex.args[1] == 400:
                 toast_error = render_template("___toast_error.html", message=ex.args[0])
-                return f"""<mixhtml mix-update="#toast">{ toast_error }</mixhtml>""", 400
+                return f"""<browser mix-update="#toast">{toast_error}</browser>""", 400
             
-            # Database errors
-            if "Duplicate entry" and user_email in str(ex): 
-                toast_error = render_template("___toast_error.html", message="Email already registered")
-                return f"""<mixhtml mix-update="#toast">{ toast_error }</mixhtml>""", 400
-            if "Duplicate entry" and user_username in str(ex): 
-                toast_error = render_template("___toast_error.html", message="Username already registered")
-                return f"""<mixhtml mix-update="#toast">{ toast_error }</mixhtml>""", 400
+            # Duplicate entry / database errors
+            elif "Duplicate entry" in str(ex):
+                if user_email in str(ex): 
+                    message = dictionary["email_already_registered"][lan]
             
+                elif user_username in str(ex): message = dictionary["username_already_registered"][lan]
+                else:
+                    message = dictionary["system_error"][lan]
+            
+                toast_error = render_template("___toast_error.html", message=message)
+                return f"""<browser mix-update="#toast">{toast_error}</browser>""", 400
+
             # System or developer error
-            toast_error = render_template("___toast_error.html", message="System under maintenance")
-            return f"""<mixhtml mix-bottom="#toast">{ toast_error }</mixhtml>""", 500
+            else: 
+                message = dictionary["system_error"][lan]
+                toast_error = render_template("___toast_error.html", message=message)
+                return f"""<browser mix-bottom="#toast">{ toast_error }</browser>""", 500
 
         finally:
             if "cursor" in locals(): cursor.close()
