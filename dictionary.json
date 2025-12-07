@@ -268,5 +268,40 @@
         "english": "Error adding comment",
         "danish": "Fejl ved tilføjelse af kommentar",
         "spanish": "Error al agregar el comentario"
+    },
+    "post_empty": {
+        "english": "Post must contain text",
+        "danish": "Indholdet må ikke være tomt",
+        "spanish": "El post no puede estar vacío"
+    },
+    "post_posted": {
+        "english": "The world is reading your post!",
+        "danish": "Din post er sendt!",
+        "spanish": "¡Tu publicación ha sido enviada!"
+    },
+    "email_not_found": {
+        "english": "Email not found",
+        "danish": "Email ikke fundet",
+        "spanish": "Correo no encontrado"
+    },
+    "reset_link_expired": {
+        "english": "Reset link expired",
+        "danish": "Link til nulstilling er udløbet",
+        "spanish": "El enlace de restablecimiento ha caducado"
+    },
+    "invalid_filetype": {
+        "english": "Invalid file type",
+        "danish": "Ugyldig filtype",
+        "spanish": "Tipo de archivo no válido"
+    },
+    "language_updated": {
+        "english": "Languages are updated!",
+        "danish": "Sprog er opdateret!",
+        "spanish": "¡Idiomas actualizados!"
+    },
+    "search_empty": {
+        "english": "Search field cannot be empty",
+        "danish": "Søgefeltet kan ikke være tomt",
+        "spanish": "El campo de búsqueda no puede estar vacío"
     }
 }

@@ -380,8 +380,7 @@ def verify_account():
         db.commit()
 
         if cursor.rowcount != 1: 
-            message = dictionary["invalid_verification_key"][lan]
-            return render_template("___toast_error.html", message=message), 400
+            return render_template("___toast_error.html", message=dictionary["invalid_verification_key"][lan]), 400
         
         return redirect(url_for('login'))
     
@@ -411,35 +410,37 @@ def view_forgot_form():
         user_email = request.form.get("user_email", "").strip()
 
         try:
+            # Find brugeren i databasen
             db, cursor = x.db()
-            # find brugeren i databasen
             q = "SELECT user_pk FROM users WHERE user_email = %s"
             cursor.execute(q, (user_email,))
             user = cursor.fetchone()
 
-            if user:
-                user_pk = user["user_pk"]
-                ic(user)
-                reset_key = uuid.uuid4().hex
-                q = "UPDATE users SET user_reset_password_key = %s WHERE user_pk = %s"
-                cursor.execute(q, (reset_key, user_pk))
-                db.commit()
+            # Hvis email ikke findes
+            if not user:
+                toast_error = render_template("___toast_error.html",message=dictionary["email_not_found"][lan])
+                return f"<browser mix-bottom='#toast'>{toast_error}</browser>"
 
-                # Send reset password email
-                email_forgot_password = render_template("_email_forgot_password.html", reset_key=reset_key)
-                ic(email_forgot_password)
-                x.send_email(user_email, "Reset your password", email_forgot_password)
+            # Hvis email findes
+            user_pk = user["user_pk"]
+            reset_key = uuid.uuid4().hex
+            q = "UPDATE users SET user_reset_password_key = %s WHERE user_pk = %s"
+            cursor.execute(q, (reset_key, user_pk))
+            db.commit()
 
-                return redirect(url_for("login"))
+            # Send reset password email
+            email_forgot_password = render_template("_email_forgot_password.html", reset_key=reset_key)
+            x.send_email(user_email, dictionary["reset_password_subject"][lan], email_forgot_password, lan=lan)
+
+            # Redirect til login uden toast
+            return redirect(url_for("login"))
 
         except Exception as ex:
             ic(ex)
             if "db" in locals(): db.rollback()
-            # User errors
-            if ex.args[1] == 400: return ex.args[0], 400    
 
-            # System or developer error
-            return "Cannot send link to user"
+            toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+            return f"""<browser mix-update="#toast">{toast_error}</browser>""", 500
 
         finally:
             if "cursor" in locals(): cursor.close()
@@ -449,23 +450,31 @@ def view_forgot_form():
 ##############################
 @app.route("/reset-password", methods=["GET", "POST"])
 def reset_password():
+    lan = session.get("lan", "english")
+
     if request.method == "GET":
         try:
             reset_key = request.args.get("key", "").strip()
+
             db, cursor = x.db()
             q = "SELECT user_pk FROM users WHERE user_reset_password_key = %s"
             cursor.execute(q, (reset_key,))
             user = cursor.fetchone()
 
             if not user: 
-                return "Expired link", 400
+                toast_error = render_template("___toast_error.html",message=dictionary["reset_link_expired"][lan])
+                return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 400
         
             return render_template("_reset_password.html", key=reset_key)
+        
         except Exception as ex:
             ic(ex)
             if "db" in locals(): db.rollback()
             if ex.args[1] == 400: return ex.args[0], 400
-            return "Cannot reset password"
+
+            toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+            return f"""<browser mix-update="#toast">{toast_error}</browser>""", 500
+        
         finally:
             if "cursor" in locals(): cursor.close()
             if "db" in locals(): db.close()
@@ -479,7 +488,8 @@ def reset_password():
             user_password_confirm = x.validate_user_password_confirm()
 
             if user_password != user_password_confirm:
-                raise Exception ("Passwords do not match", 400)
+                toast_error = render_template("___toast_error.html",message=dictionary["passwords_do_not_match"][lan])
+                return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 400
             
             db, cursor = x.db()
             q = "SELECT user_pk FROM users WHERE user_reset_password_key = %s"
@@ -487,25 +497,25 @@ def reset_password():
             user = cursor.fetchone()
 
             if not user:
-                raise Exception ("Invalid or expired reset link", 400)
+                toast_error = render_template("___toast_error.html",message=dictionary["reset_link_expired"][lan])
+                return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 400
             
             user_pk = user["user_pk"]
             hashed = generate_password_hash(user_password)
 
             q = "UPDATE users SET user_password = %s, user_reset_password_key = '' WHERE user_pk = %s"
             cursor.execute(q, (hashed, user_pk))
-
             db.commit()
 
+            # Redirect til login efter succes
             return redirect(url_for('login'))
-            # return f"""<mixhtml mix-redirect="{url_for('login')}"></mixhtml>"""
         
         except Exception as ex:
             ic(ex)
             if "db" in locals(): db.rollback()
-            if len(ex.args) > 1 and ex.args[1] == 400:
-                return ex.args[0], 400
-            return "Cannot reset password", 500
+
+            toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+            return f"""<browser mix-update="#toast">{toast_error}</browser>""", 500
         
         finally:
             if "cursor" in locals(): cursor.close()
@@ -517,7 +527,7 @@ def reset_password():
 def logout():
     try:
         lan = session.get("lan", "english")
-        
+
         session.clear()
         return redirect(url_for("login"))
     
@@ -539,12 +549,13 @@ def home_comp():
         lan = session.get("lan", "english")
 
         user = session.get("user", "")
-        if not user: return "error"
+        if not user: 
+            return "error"
+        
         db, cursor = x.db()
         q = "SELECT * FROM users JOIN posts ON user_pk = post_user_fk ORDER BY RAND() LIMIT 5"
         cursor.execute(q)
         tweets = cursor.fetchall()
-        ic(tweets)
 
         html = render_template("_home_comp.html", tweets=tweets)
         return f"""<mixhtml mix-update="main">{ html }</mixhtml>"""
@@ -568,11 +579,14 @@ def profile():
         lan = session.get("lan", "english")
 
         user = session.get("user", "")
-        if not user: return "error"
-        q = "SELECT * FROM users WHERE user_pk = %s"
+        if not user: 
+            return "error"
+
         db, cursor = x.db()
+        q = "SELECT * FROM users WHERE user_pk = %s"
         cursor.execute(q, (user["user_pk"],))
         user = cursor.fetchone()
+
         profile_html = render_template("_profile.html", x=x, user=user)
         return f"""<browser mix-update="#main">{ profile_html }</browser>"""
     
@@ -584,7 +598,8 @@ def profile():
         return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 500
     
     finally:
-        pass
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
 
 
 ##############################
@@ -625,6 +640,9 @@ def following():
         lan = session.get("lan", "english")
 
         user = session.get("user", "")
+        if not user: 
+            return "error"
+        
         db, cursor = x.db()
         q = """
             SELECT 
@@ -659,6 +677,9 @@ def followers():
         lan = session.get("lan", "english")
 
         user = session.get("user", "")
+        if not user: 
+            return "error"
+        
         db, cursor = x.db()
         q = """
             SELECT
@@ -698,6 +719,9 @@ def follow_toggle():
         lan = session.get("lan", "english")
 
         user = session.get("user", "")
+        if not user: 
+            return "error"
+        
         user_to_follow = request.form.get("user_to_follow")
         follow_created_at = int(time.time())
 
@@ -849,6 +873,9 @@ def like_toggle():
         lan = session.get("lan", "english")
 
         user = session.get("user", "")
+        if not user: 
+            return "error"
+        
         post_pk = request.form.get("post_pk")
         like_created_at = int(time.time())
 
@@ -1040,7 +1067,7 @@ def api_create_post():
             
         # hvis der ikke er tekst, kan det ikke udgives
         if not post:
-            toast_error = render_template("___toast_error.html", message="Post must contain text")
+            toast_error = render_template("___toast_error.html", message=dictionary["post_empty"][lan])
             return f"<browser mix-bottom='#toast'>{toast_error}</browser>"
         
         # håndtering af billedfilen
@@ -1048,7 +1075,7 @@ def api_create_post():
         post_image_path = None
         if uploaded_file and uploaded_file.filename != "":
             if not allowed_file(uploaded_file.filename):
-                toast_error = render_template("___toast_error.html", message="Invalid file type")
+                toast_error = render_template("___toast_error.html", message=dictionary["invalid_filetype"][lan])
                 return f"<browser mix-bottom='#toast'>{toast_error}</browser>"
             
             # Hent filtypen, lav et unikt filnavn, lav fuld sti og gem filen på serveren
@@ -1070,7 +1097,7 @@ def api_create_post():
         cursor.execute(q, (post_pk, post_blocked, user["user_pk"] , post, post_total_likes, post_total_comments, post_image_path, post_created_at, post_updated_at, post_deleted_at))
         db.commit()
         
-        toast_ok = render_template("___toast_ok.html", message="The world is reading your post !")
+        toast_ok = render_template("___toast_ok.html", message=dictionary["post_posted"][lan])
         tweet = {
             "user_first_name": user["user_first_name"],
             "user_last_name": user["user_last_name"],
@@ -1374,8 +1401,8 @@ def api_update_profile():
             return f"""<browser mix-update="#toast">{toast_error}</browser>""", 400
         
         # System or developer error
-        toast_error = render_template("___toast_error.html", message="System under maintenance")
-        return f"""<mixhtml mix-bottom="#toast">{ toast_error }</mixhtml>""", 500
+        toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+        return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 500
 
     finally:
         if "cursor" in locals(): cursor.close()
@@ -1431,10 +1458,12 @@ def delete_profile():
 @app.post("/api-search")
 def api_search():
     try:
+        lan = session.get("lan", "english")
         search_for = request.form.get("search_for", "")
 
         if not search_for: 
-            return """empty search field""", 400
+            toast_error = render_template("___toast_error.html", message=dictionary["search_empty"][lan])
+            return f"<mixhtml mix-bottom='#toast'>{toast_error}</mixhtml>", 400
         
         part_of_query = f"%{search_for}%"
 
@@ -1509,6 +1538,8 @@ def get_data_from_sheet():
 @app.route("/languages", methods=["GET", "POST"])
 def languages():
     try:
+        lan = session.get("lan", "english")
+
         admin = session.get("user")
         if not admin or admin.get("user_role", "").lower() != "admin":
             return '<browser mix-redirect="/home"></browser>'
@@ -1516,7 +1547,7 @@ def languages():
         # Hvis det er POST, opdater fra Google Sheet
         if request.method == "POST":
             get_data_from_sheet()
-            toast_ok = render_template("___toast_ok.html", message="Languages are updated!")
+            toast_ok = render_template("___toast_ok.html", message=dictionary["languages_updated"][lan])
             return f"""<mixhtml mix-update="#toast">{toast_ok}</mixhtml>"""
 
         # Læs dictionary fra fil
