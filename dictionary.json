@@ -233,5 +233,15 @@
         "english": "Email sent successfully!",
         "danish": "Email sendt!",
         "spanish": "¡Correo enviado!"
+    },
+    "invalid_verification_key": {
+        "english": "Invalid verification key",
+        "danish": "Ugyldig verificeringsnøgle",
+        "spanish": "Clave de verificación no válida"
+    },
+    "reset_password_subject": {
+        "english": "Reset your password",
+        "danish": "Nulstil din adgangskode",
+        "spanish": "Restablecer tu contraseña"
     }
 }

@@ -50,7 +50,6 @@ def _____USER_____(): pass
 
 @app.get("/")
 def view_index():
-   
     return render_template("index.html")
 
 ##############################
@@ -72,7 +71,11 @@ def login(lan = "english"):
         lan = "english"
     x.default_language = lan
 
+    # Gem sproget i sessionen, så andre sider kan bruge det
+    session["lan"] = lan
+
     if request.method == "GET":
+        # Redirect admin til admin-home, andre til normal home
         user = session.get("user", "")
         if user:
             if user.get("user_role") == "admin": 
@@ -87,12 +90,13 @@ def login(lan = "english"):
             user_email = x.validate_user_email(lan)
             user_password = x.validate_user_password(lan)
 
-            # Connect to the database
+            # Hent bruger fra database
             q = "SELECT * FROM users WHERE user_email = %s"
             db, cursor = x.db()
             cursor.execute(q, (user_email,))
             user = cursor.fetchone()
 
+            # Håndter fejl ved log ind
             if not user: 
                 raise Exception(dictionary["user_not_found"][lan], 400)
 
@@ -102,9 +106,11 @@ def login(lan = "english"):
             if user["user_verification_key"] != "":
                 raise Exception(dictionary["user_not_verified"][lan], 400)
 
+            # Fjern password fra session og log ind 
             user.pop("user_password")
             session["user"] = user
 
+            # Redirect baseret på brugerrolle
             if user.get("user_role") == "admin":
                 return f"""<browser mix-redirect="/home-admin"></browser>"""
             else:
@@ -137,6 +143,7 @@ def signup(lan = "english"):
     x.default_language = lan
 
     if request.method == "GET":
+        # Redirect admin til admin-home, andre til normal home
         user = session.get("user", "")
         if user:
             if user.get("user_role") == "admin": 
@@ -168,7 +175,7 @@ def signup(lan = "english"):
             user_created_at = int(time.time())
             user_updated_at = 0
 
-            # Connect to the database
+            # Insert user into database
             q = "INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
             db, cursor = x.db()
             cursor.execute(q, (user_pk, user_role, user_blocked, user_email, user_hashed_password, user_reset_password_key, user_username, 
@@ -177,8 +184,9 @@ def signup(lan = "english"):
 
             # Send verification email
             email_verify_account = render_template("_email_verify_account.html", user_verification_key=user_verification_key)
-            x.send_email(user_email, dictionary["verify_account_subject"][lan], email_verify_account)
+            x.send_email(user_email, dictionary["verify_account_subject"][lan], email_verify_account, lan=lan)
 
+            # Vis modal efter successfuld oprettelse
             verification_modal = render_template("_verification_modal.html")
             return f"""<mixhtml mix-update="#modal">{verification_modal}</mixhtml>""", 200
 
@@ -218,6 +226,8 @@ def signup(lan = "english"):
 @x.no_cache
 def home():
     try:
+        lan = session.get("lan", "english") 
+
         user = session.get("user", "")
         if not user:
             return redirect(url_for("login"))
@@ -296,7 +306,9 @@ def home():
     
     except Exception as ex:
         ic(ex)
-        return "error"
+
+        toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+        return f"""<browser mix-bottom="#toast">{toast_error}</browser>""", 500
     
     finally:
         if "cursor" in locals(): cursor.close()
@@ -307,6 +319,8 @@ def home():
 @app.get("/home-admin")
 def home_admin():
     try:
+        lan = session.get("lan", "english") 
+
         admin = session.get("user")
         if not admin or admin.get("user_role", "").lower() != "admin":
             return '<browser mix-redirect="/home"></browser>'
@@ -342,7 +356,9 @@ def home_admin():
     
     except Exception as ex:
         ic(ex)
-        return "error"
+        
+        toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+        return f"""<browser mix-bottom="#toast">{toast_error}</browser>""", 500
     
     finally:
         if "cursor" in locals(): cursor.close()
@@ -353,22 +369,30 @@ def home_admin():
 @app.route("/verify-account", methods=["GET"])
 def verify_account():
     try:
+        lan = session.get("lan", "english") 
+
         user_verification_key = x.validate_uuid4_without_dashes(request.args.get("key", ""))
         user_verified_at = int(time.time())
+
         db, cursor = x.db()
         q = "UPDATE users SET user_verification_key = '', user_verified_at = %s WHERE user_verification_key = %s"
         cursor.execute(q, (user_verified_at, user_verification_key))
         db.commit()
-        if cursor.rowcount != 1: raise Exception("Invalid key", 400)
-        return redirect( url_for('login') )
+
+        if cursor.rowcount != 1: 
+            message = dictionary["invalid_verification_key"][lan]
+            return render_template("___toast_error.html", message=message), 400
+        
+        return redirect(url_for('login'))
+    
     except Exception as ex:
         ic(ex)
-        if "db" in locals(): db.rollback()
+
         # User errors
         if ex.args[1] == 400: return ex.args[0], 400    
 
-        # System or developer error
-        return "Cannot verify user"
+        toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+        return f"""<browser mix-bottom="#toast">{toast_error}</browser>""", 500
 
     finally:
         if "cursor" in locals(): cursor.close()
@@ -378,6 +402,8 @@ def verify_account():
 ##############################
 @app.route("/forgot-password", methods=["GET", "POST"])
 def view_forgot_form():
+    lan = session.get("lan", "english")
+
     if request.method == "GET":
         return render_template("_forgot_password.html")
     
