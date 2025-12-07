@@ -516,12 +516,17 @@ def reset_password():
 @app.get("/logout")
 def logout():
     try:
+        lan = session.get("lan", "english")
+        
         session.clear()
         return redirect(url_for("login"))
     
     except Exception as ex:
         ic(ex)
-        return "error"
+
+        # System or developer error
+        toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+        return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 500
     
     finally:
         pass
@@ -531,6 +536,8 @@ def logout():
 @app.get("/home-comp")
 def home_comp():
     try:
+        lan = session.get("lan", "english")
+
         user = session.get("user", "")
         if not user: return "error"
         db, cursor = x.db()
@@ -544,7 +551,10 @@ def home_comp():
     
     except Exception as ex:
         ic(ex)
-        return "error"
+        
+        # System or developer error
+        toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+        return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 500
     
     finally:
         if "cursor" in locals(): cursor.close()
@@ -555,6 +565,8 @@ def home_comp():
 @app.get("/profile")
 def profile():
     try:
+        lan = session.get("lan", "english")
+
         user = session.get("user", "")
         if not user: return "error"
         q = "SELECT * FROM users WHERE user_pk = %s"
@@ -566,7 +578,10 @@ def profile():
     
     except Exception as ex:
         ic(ex)
-        return "error"
+        
+        # System or developer error
+        toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+        return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 500
     
     finally:
         pass
@@ -576,6 +591,8 @@ def profile():
 @app.get("/users")
 def users():
     try:
+        lan = session.get("lan", "english")
+
         admin = session.get("user")
         if not admin or admin.get("user_role", "").lower() != "admin":
             return f"""<browser mix-redirect="/home"></browser>"""
@@ -591,7 +608,10 @@ def users():
     
     except Exception as ex:
         ic(ex)
-        return "error"
+        
+        # System or developer error
+        toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+        return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 500
     
     finally:
         if "cursor" in locals(): cursor.close()
@@ -602,6 +622,8 @@ def users():
 @app.get("/following")
 def following():
     try:
+        lan = session.get("lan", "english")
+
         user = session.get("user", "")
         db, cursor = x.db()
         q = """
@@ -620,7 +642,10 @@ def following():
     
     except Exception as ex:
         ic(ex)
-        return "error"
+        
+        # System or developer error
+        toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+        return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 500
     
     finally:
         if "cursor" in locals(): cursor.close()
@@ -631,6 +656,8 @@ def following():
 @app.get("/followers")
 def followers():
     try:
+        lan = session.get("lan", "english")
+
         user = session.get("user", "")
         db, cursor = x.db()
         q = """
@@ -654,7 +681,10 @@ def followers():
     
     except Exception as ex:
         ic(ex)
-        return "error"
+
+        # System or developer error
+        toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+        return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 500
     
     finally:
         if "cursor" in locals(): cursor.close()
@@ -665,6 +695,8 @@ def followers():
 @app.post("/follow-toggle")
 def follow_toggle():
     try:
+        lan = session.get("lan", "english")
+
         user = session.get("user", "")
         user_to_follow = request.form.get("user_to_follow")
         follow_created_at = int(time.time())
@@ -704,7 +736,10 @@ def follow_toggle():
     
     except Exception as ex:
         ic(ex)
-        return "error"
+
+        # System or developer error
+        toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+        return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 500
     
     finally:
         if "cursor" in locals(): cursor.close()
@@ -715,6 +750,8 @@ def follow_toggle():
 @app.post("/block_user")
 def block_user():
     try:
+        lan = session.get("lan", "english")
+
         admin = session.get("user")
         if not admin or admin.get("user_role", "").lower() != "admin":
             return f"""<browser mix-redirect="/home"></browser>"""
@@ -746,8 +783,11 @@ def block_user():
         return f"""<browser mix-update="main">{users_html}</browser>"""
 
     except Exception as ex:
-            ic(ex)
-            return "error"
+        ic(ex)
+
+        # System or developer error
+        toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+        return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 500
     
     finally:
         if "cursor" in locals(): cursor.close()
@@ -758,6 +798,8 @@ def block_user():
 @app.post("/unblock_user")
 def unblock_user():
     try:
+        lan = session.get("lan", "english")
+
         user = session.get("user")
         if not user or user.get("user_role", "").lower() != "admin":
             return f"""<browser mix-redirect="/home"></browser>"""
@@ -789,8 +831,11 @@ def unblock_user():
         return f"""<browser mix-update="main">{users_html}</browser>"""
 
     except Exception as ex:
-            ic(ex)
-            return "error"
+        ic(ex)
+
+        # System or developer error
+        toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+        return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 500
     
     finally:
         if "cursor" in locals(): cursor.close()
@@ -801,6 +846,8 @@ def unblock_user():
 @app.post("/like-toggle")
 def like_toggle():
     try:
+        lan = session.get("lan", "english")
+
         user = session.get("user", "")
         post_pk = request.form.get("post_pk")
         like_created_at = int(time.time())
@@ -838,7 +885,10 @@ def like_toggle():
 
     except Exception as ex:
         ic(ex)
-        return "error"
+        
+        # System or developer error
+        toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+        return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 500
     
     finally:
         if "cursor" in locals(): cursor.close()
@@ -849,6 +899,8 @@ def like_toggle():
 @app.get("/posts")
 def posts():
     try:
+        lan = session.get("lan", "english")
+
         admin = session.get("user")
         if not admin or admin.get("user_role", "").lower() != "admin":
             return f"""<browser mix-redirect="/home"></browser>"""
@@ -864,7 +916,10 @@ def posts():
     
     except Exception as ex:
         ic(ex)
-        return "error"
+
+        # System or developer error
+        toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+        return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 500
     
     finally:
         if "cursor" in locals(): cursor.close()
@@ -875,6 +930,8 @@ def posts():
 @app.post("/block-post")
 def block_post():
     try: 
+        lan = session.get("lan", "english")
+
         user = session.get("user")
         if not user or user.get("user_role") != "admin":
             return '<browser mix-redirect="/home"></browser>'
@@ -907,7 +964,10 @@ def block_post():
 
     except Exception as ex:
             ic(ex)
-            return "error"
+
+            # System or developer error
+            toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+            return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 500
     
     finally:
         if "cursor" in locals(): cursor.close()
@@ -918,6 +978,8 @@ def block_post():
 @app.post("/unblock-post")
 def unblock_post():
     try: 
+        lan = session.get("lan", "english")
+
         user = session.get("user")
         if not user or user.get("user_role") != "admin":
             return '<browser mix-redirect="/home"></browser>'
@@ -950,7 +1012,10 @@ def unblock_post():
 
     except Exception as ex:
             ic(ex)
-            return "error"
+
+            # System or developer error
+            toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+            return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 500
     
     finally:
         if "cursor" in locals(): cursor.close()
@@ -961,6 +1026,8 @@ def unblock_post():
 @app.route("/api-create-post", methods=["POST"])
 def api_create_post():
     try:
+        lan = session.get("lan", "english")
+
         user = session.get("user", "")
         if not user: 
             return "invalid user"
@@ -1024,7 +1091,6 @@ def api_create_post():
     
     except Exception as ex:
         ic(ex)
-        if "db" in locals(): db.rollback()
 
         # User errors
         if "x-error post" in str(ex):
@@ -1032,8 +1098,8 @@ def api_create_post():
             return f"""<browser mix-bottom="#toast">{toast_error}</browser>"""
 
         # System or developer error
-        toast_error = render_template("___toast_error.html", message="System under maintenance")
-        return f"""<browser mix-bottom="#toast">{ toast_error }</browser>""", 500
+        toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+        return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 500
 
     finally:
         if "cursor" in locals(): cursor.close()
@@ -1044,6 +1110,8 @@ def api_create_post():
 @app.route("/edit-post")
 def edit_post():
     try:
+        lan = session.get("lan", "english")
+
         user = session.get("user")
         if not user:
             return "invalid user"
@@ -1060,7 +1128,9 @@ def edit_post():
 
     except Exception as ex:
         ic(ex)
-        return "error"
+        
+        toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+        return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 500
     
     finally:
         if "cursor" in locals(): cursor.close()
@@ -1071,6 +1141,8 @@ def edit_post():
 @app.route("/api-update-post", methods=["POST"])
 def api_update_post():
     try:
+        lan = session.get("lan", "english")
+
         user = session.get("user", "")
         if not user: 
             return "invalid user"
@@ -1087,7 +1159,7 @@ def api_update_post():
         
         # hvis der ikke er tekst
         if not post:
-            toast_error = render_template("___toast_error.html", message="Post must contain text")
+            toast_error = render_template("___toast_error.html", message=dictionary["post_empty"][lan])
             return f"<mixhtml mix-bottom='#toast'>{toast_error}</mixhtml>"
 
         # Hent eksisterende post
@@ -1105,7 +1177,7 @@ def api_update_post():
         uploaded_file = request.files.get("upload_image")
         if uploaded_file and uploaded_file.filename != "":
             if not allowed_file(uploaded_file.filename):
-                toast_error = render_template("___toast_error.html", message="Invalid file type")
+                toast_error = render_template("___toast_error.html", message=dictionary["invalid_filetype"][lan])
                 return f"<mixhtml mix-bottom='#toast'>{toast_error}</mixhtml>"
 
             filetype = uploaded_file.filename.rsplit(".", 1)[1].lower()
@@ -1129,7 +1201,7 @@ def api_update_post():
         }
 
         html_post = render_template("_tweet.html", tweet=tweet)
-        toast_ok = render_template("___toast_ok.html", message="Your post has been updated!")
+        toast_ok = render_template("___toast_ok.html", message=dictionary["post_updated"][lan])
 
         # Returner som mixhtml, så siden opdateres live
         return f"""
@@ -1140,8 +1212,8 @@ def api_update_post():
     except Exception as ex:
         ic(ex)
 
-        toast_error = render_template("___toast_error.html", message="System under maintenance")
-        return f"<mixhtml mix-bottom='#toast'>{toast_error}</mixhtml>", 500
+        toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
+        return f"<browser mix-bottom='#toast'>{toast_error}</browser>", 500
 
     finally:
         if "cursor" in locals(): cursor.close()
