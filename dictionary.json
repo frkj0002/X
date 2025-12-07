@@ -243,5 +243,15 @@
         "english": "Reset your password",
         "danish": "Nulstil din adgangskode",
         "spanish": "Restablecer tu contraseña"
+    },
+    "invalid_reset_link": {
+        "english": "Invalid or expired reset link",
+        "danish": "Ugyldigt eller udløbet link til nulstilling",
+        "spanish": "Enlace de restablecimiento inválido o caducado"
+    },
+    "passwords_do_not_match": {
+        "english": "Passwords do not match",
+        "danish": "Adgangskoderne matcher ikke",
+        "spanish": "Las contraseñas no coinciden"
     }
 }

@@ -392,7 +392,7 @@ def verify_account():
         if ex.args[1] == 400: return ex.args[0], 400    
 
         toast_error = render_template("___toast_error.html", message=dictionary["system_error"][lan])
-        return f"""<browser mix-bottom="#toast">{toast_error}</browser>""", 500
+        return f"""<browser mix-update="#toast">{toast_error}</browser>""", 500
 
     finally:
         if "cursor" in locals(): cursor.close()
@@ -506,6 +506,7 @@ def reset_password():
             if len(ex.args) > 1 and ex.args[1] == 400:
                 return ex.args[0], 400
             return "Cannot reset password", 500
+        
         finally:
             if "cursor" in locals(): cursor.close()
             if "db" in locals(): db.close()
@@ -517,9 +518,11 @@ def logout():
     try:
         session.clear()
         return redirect(url_for("login"))
+    
     except Exception as ex:
         ic(ex)
         return "error"
+    
     finally:
         pass
 
@@ -528,7 +531,6 @@ def logout():
 @app.get("/home-comp")
 def home_comp():
     try:
-
         user = session.get("user", "")
         if not user: return "error"
         db, cursor = x.db()
@@ -539,11 +541,14 @@ def home_comp():
 
         html = render_template("_home_comp.html", tweets=tweets)
         return f"""<mixhtml mix-update="main">{ html }</mixhtml>"""
+    
     except Exception as ex:
         ic(ex)
         return "error"
+    
     finally:
-        pass
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
 
 
 ##############################
@@ -558,9 +563,11 @@ def profile():
         user = cursor.fetchone()
         profile_html = render_template("_profile.html", x=x, user=user)
         return f"""<browser mix-update="#main">{ profile_html }</browser>"""
+    
     except Exception as ex:
         ic(ex)
         return "error"
+    
     finally:
         pass
 
@@ -585,6 +592,7 @@ def users():
     except Exception as ex:
         ic(ex)
         return "error"
+    
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -606,11 +614,14 @@ def following():
         """
         cursor.execute(q, (user["user_pk"],))
         followings = cursor.fetchall()
+
         following_html = render_template("_following.html", x=x, followings=followings)
         return f"""<browser mix-update="#main">{ following_html }</browser>"""
+    
     except Exception as ex:
         ic(ex)
         return "error"
+    
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -637,11 +648,14 @@ def followers():
         """
         cursor.execute(q, (user["user_pk"], user["user_pk"]))
         followers = cursor.fetchall()
+
         followers_html = render_template("_followers.html", x=x, followers=followers)
         return f"""<browser mix-update="#main">{followers_html}</browser>"""
+    
     except Exception as ex:
         ic(ex)
         return "error"
+    
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -654,6 +668,7 @@ def follow_toggle():
         user = session.get("user", "")
         user_to_follow = request.form.get("user_to_follow")
         follow_created_at = int(time.time())
+
         db, cursor = x.db()
         q = "SELECT 1 FROM followers WHERE user_fk = %s AND follow_user_fk = %s"
         cursor.execute(q, (user["user_pk"], user_to_follow))
@@ -690,6 +705,7 @@ def follow_toggle():
     except Exception as ex:
         ic(ex)
         return "error"
+    
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -732,6 +748,7 @@ def block_user():
     except Exception as ex:
             ic(ex)
             return "error"
+    
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -774,6 +791,7 @@ def unblock_user():
     except Exception as ex:
             ic(ex)
             return "error"
+    
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -821,6 +839,7 @@ def like_toggle():
     except Exception as ex:
         ic(ex)
         return "error"
+    
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -846,6 +865,7 @@ def posts():
     except Exception as ex:
         ic(ex)
         return "error"
+    
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -888,6 +908,7 @@ def block_post():
     except Exception as ex:
             ic(ex)
             return "error"
+    
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()  
@@ -930,6 +951,7 @@ def unblock_post():
     except Exception as ex:
             ic(ex)
             return "error"
+    
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()  
@@ -1117,7 +1139,7 @@ def api_update_post():
 
     except Exception as ex:
         ic(ex)
-        if "db" in locals(): db.rollback()
+
         toast_error = render_template("___toast_error.html", message="System under maintenance")
         return f"<mixhtml mix-bottom='#toast'>{toast_error}</mixhtml>", 500
 
@@ -1149,7 +1171,6 @@ def delete_post():
     
     except Exception as ex:
         ic(ex)
-        if "db" in locals(): db.rollback()
         return "Could not delete post", 500
 
     finally:
@@ -1255,6 +1276,7 @@ def api_update_profile():
             <browser mix-update="#profile_tag .picture">{user_avatar_path}</browser>
             
         """, 200
+    
     except Exception as ex:
         ic(ex)
         # User errors
@@ -1302,11 +1324,14 @@ def delete_profile():
         q = "DELETE FROM users WHERE user_pk = %s"
         cursor.execute(q, (user["user_pk"],))
         db.commit()
+
         return f"""<browser mix-redirect="/signup"></browser>"""
         # return redirect(url_for('signup'))
+
     except Exception as ex:
         ic(ex)
         return "Error: deleting profile", 500
+    
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -1326,9 +1351,11 @@ def api_search():
         cursor.execute(q, (part_of_query,))
         users = cursor.fetchall()
         return jsonify(users)
+    
     except Exception as ex:
         ic(ex)
         return str(ex)
+    
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -1405,7 +1432,6 @@ def languages():
 
         languages_html = render_template("_languages.html", languages=data)
         return f"""<browser mix-update="main">{languages_html}</browser>"""
-
 
     except Exception as ex:
         ic(ex)
