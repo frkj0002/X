@@ -1071,7 +1071,7 @@ def api_create_post():
         
         # håndtering af billedfilen
         uploaded_file = request.files.get("upload_image")
-        post_image_path = None
+        post_image_path = ""
         if uploaded_file and uploaded_file.filename != "":
             if not allowed_file(uploaded_file.filename):
                 toast_error = render_template("___toast_error.html", message=dictionary["invalid_filetype"][lan])
@@ -1099,7 +1099,6 @@ def api_create_post():
         toast_ok = render_template("___toast_ok.html", message=dictionary["post_posted"][lan])
         tweet = {
             "user_first_name": user["user_first_name"],
-            "user_last_name": user["user_last_name"],
             "user_username": user["user_username"],
             "user_avatar_path": user["user_avatar_path"],
             "post_message": post,
@@ -1219,7 +1218,6 @@ def api_update_post():
         # Render opdateret tweet
         tweet = {
             "user_first_name": user["user_first_name"],
-            "user_last_name": user["user_last_name"],
             "user_username": user["user_username"],
             "user_avatar_path": user["user_avatar_path"],
             "post_message": post,
@@ -1313,7 +1311,6 @@ def add_comment():
 
         comment = {
             "user_first_name": user["user_first_name"],
-            "user_last_name": user["user_last_name"],
             "user_username": user["user_username"],
             "comment_message" : comment_text,
             "comment_created_at" : comment_created_at
@@ -1422,6 +1419,7 @@ def delete_profile():
         if not user:
             return redirect(url_for("login"))
 
+        # Hent brugerens info til archived-tabellen
         db, cursor = x.db()
         q = """SELECT user_pk, user_created_at, 
         user_total_followers AS archived_followers_count, 
@@ -1434,12 +1432,22 @@ def delete_profile():
         cursor.execute(q, (user["user_pk"],))
         archived_user = cursor.fetchone()
 
+        # Arkiver
         q = "INSERT INTO archived_users VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
         cursor.execute(q, (user["user_pk"], archived_user["archived_posts_count"], archived_user["archived_comments_count"], archived_user["archived_likes_count"], archived_user["archived_followers_count"], archived_user["archived_following_count"], archived_user["user_created_at"], int(time.time())))
         
+        # Sæt brugerens posts som slettet
+        post_deleted_at = int(time.time())
+        q = "UPDATE posts SET post_deleted_at = %s WHERE post_user_fk = %s"
+        cursor.execute(q, (post_deleted_at, user["user_pk"]))
+
+        # Slet brugeren
         q = "DELETE FROM users WHERE user_pk = %s"
         cursor.execute(q, (user["user_pk"],))
         db.commit()
+
+        # Fjern session
+        session.clear()
 
         return f"""<browser mix-redirect="/signup"></browser>"""
 
