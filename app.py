@@ -266,7 +266,6 @@ def home():
             FROM comments
             JOIN users ON users.user_pk = comments.comment_user_fk
             WHERE comments.comment_post_fk = %s
-              AND comments.comment_deleted_at = 0
             ORDER BY comments.comment_created_at ASC
             """
             cursor.execute(q, (tweet["post_pk"],))
@@ -1302,11 +1301,10 @@ def add_comment():
 
         comment_pk = uuid.uuid4().hex
         comment_updated_at = 0
-        comment_deleted_at = 0
 
         db,cursor = x.db()
-        q = "INSERT INTO comments VALUES (%s, %s, %s, %s, %s, %s, %s)"
-        cursor.execute(q, (comment_pk, user["user_pk"], post_pk, comment_text, comment_created_at, comment_updated_at, comment_deleted_at))
+        q = "INSERT INTO comments VALUES (%s, %s, %s, %s, %s, %s)"
+        cursor.execute(q, (comment_pk, user["user_pk"], post_pk, comment_text, comment_created_at, comment_updated_at))
         db.commit()
 
         comment = {
@@ -1440,6 +1438,14 @@ def delete_profile():
         post_deleted_at = int(time.time())
         q = "UPDATE posts SET post_deleted_at = %s WHERE post_user_fk = %s"
         cursor.execute(q, (post_deleted_at, user["user_pk"]))
+
+        # Slet alle likes fra denne bruger → trigger aktiveres
+        q = "DELETE FROM likes WHERE user_fk = %s"
+        cursor.execute(q, (user["user_pk"],))
+
+        # Slet alle kommentarer fra denne bruger → trigger aktiveres
+        q = "DELETE FROM comments WHERE comment_user_fk = %s"
+        cursor.execute(q, (user["user_pk"],))
 
         # Slet brugeren
         q = "DELETE FROM users WHERE user_pk = %s"
