@@ -6,7 +6,7 @@
     <div class="d-flex a-items-center gap-2">
         <img src="{{ url_for('static', filename='images/user_avatars/' ~ (user.user_avatar_path if user.user_avatar_path else 'unknown.jpg')) }}"
             alt="Profile picture" class="rounded-full w-20 h-20" accept="image/*">
-        <h2>{{ user.user_first_name }} {{ user.user_last_name }}</h2>
+        <h2>{{ user.user_first_name }}</h2>
     </div>
     <div class="d-flex gap-2 a-items-center">
         <a href="/following" mix-get>{{ user.user_total_following }} Following</a>
