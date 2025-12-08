@@ -308,5 +308,10 @@
         "english": "Your post has been deleted",
         "danish": "Din post er blevet slettet",
         "spanish": "Tu publicación ha sido eliminada"
+    },
+    "post_updated": {
+        "english": "Your post has been updated",
+        "danish": "Dit post er blevet opdateret",
+        "spanish": "Tu publicación ha sido actualizada"
     }
 }
